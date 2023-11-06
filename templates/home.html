@@ -1,0 +1,91 @@
+{% extends '_base.html' %}
+{% load static %}
+
+{% block title %}Welcome to Shoppy{% endblock title %}
+
+{% block content %}
+<section class="overflow-hidden bg-gray-50 sm:grid sm:grid-cols-2">
+  <div class="p-8 md:p-12 lg:px-16 lg:py-24">
+    <div
+      class="mx-auto max-w-xl text-center ltr:sm:text-left rtl:sm:text-right"
+    >
+      <h2 class="text-2xl font-bold text-gray-900 md:text-3xl">
+        Lorem, ipsum dolor sit amet consectetur adipisicing elit
+      </h2>
+
+      <p class="hidden text-gray-500 md:mt-4 md:block">
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Et, egestas
+        tempus tellus etiam sed. Quam a scelerisque amet ullamcorper eu enim et
+        fermentum, augue. Aliquet amet volutpat quisque ut interdum tincidunt
+        duis.
+      </p>
+
+      <div class="mt-4 md:mt-8">
+        <a
+          href="{% url "products:list" %}"
+          class="inline-block rounded bg-emerald-600 px-12 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 focus:outline-none focus:ring focus:ring-yellow-400"
+        >
+          Browse
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <img
+    alt="Student"
+    src="https://images.unsplash.com/photo-1464582883107-8adf2dca8a9f?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1770&q=80"
+    class="h-56 w-full object-cover sm:h-full"
+  />
+</section>
+
+<section>
+  <div class="max-w-screen-xl px-4 py-8 mx-auto sm:px-6 sm:py-12 lg:px-8">
+    <header>
+      <h2 class="text-xl font-bold text-gray-900 sm:text-3xl">
+        Our latest Products
+      </h2>
+
+      <p class="max-w-md mt-4 text-gray-500">
+        Lorem ipsum, dolor sit amet consectetur adipisicing elit. Itaque
+        praesentium cumque iure dicta incidunt est ipsam, officia dolor fugit
+        natus?
+      </p>
+    </header>
+
+    <ul class="grid gap-4 mt-8 sm:grid-cols-2 lg:grid-cols-4">
+      {% if products %}
+        {% for product in products %}
+        <li>
+          <a href="{% url "products:detail" product.pk %}" class="block overflow-hidden group">
+            <img
+              src="{{ product.get_thumbnail }}"
+              alt="{{ product.name }}"
+              class="h-[350px] w-full object-cover transition duration-500 group-hover:scale-105 sm:h-[450px]"
+            />
+
+            <div class="relative pt-3 bg-white">
+              <h3
+                class="text-xs text-gray-700 group-hover:underline group-hover:underline-offset-4"
+              >
+                {{ product.name }}
+              </h3>
+
+              <p class="mt-2">
+                <span class="sr-only"> Regular Price </span>
+
+                <span class="tracking-wider text-gray-900"> $ {{ product.price }} </span>
+              </p>
+            </div>
+          </a>
+        </li>
+        {% endfor %}
+        
+      
+      {% endif %}
+      
+      
+    </ul>
+  </div>
+</section>
+ 
+{% endblock %}
