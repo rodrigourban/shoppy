@@ -1,30 +1,45 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.views.generic import ListView, DetailView
 
 from .models import Product, Category, Review
 from .forms import NewProductForm, EditProductForm
 
 
-def list(request):
-    query = request.GET.get('query', '')
-    category_id = request.GET.get('category', 0)
-    categories = Category.objects.all()
-    products = Product.objects.filter(available=True)
+class ProductsListView(ListView):
+    model = Product
+    context_object_name = 'product_list'
+    template_name = 'products/list.html'
+    paginate_by = 10
 
-    if query:
-        products = products.filter(Q(name__icontains=query) |
-                             Q(description__icontains=query))
+    # def get_queryset(self):
+    #     filter_by = self.request.GET('filter', None)
+    #     order_by = self.request.GET('orderby', None)
+    #     new_context = Product.objects.filter(
+    #         filter_by=filter_by
+    #     ).order_by(order_by)
+    #     return super().get_queryset()
 
-    if category_id:
-        products = products.filter(category=category_id)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        categories = Category.objects.filter(active=True)
+        context['categories'] = categories
+        return context
 
-    return render(request, 'products/list.html', {
-        'products': products,
-        'query': query,
-        'categories': categories,
-        'category_id': int(category_id),
-    })
+
+class ProductsDetailView(DetailView):
+    model = Product
+    template_name = 'products/detail.html'
+    context_object_name = 'product'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        related_products = Product.objects.filter(
+            category=context['product'].category, available=True).exclude(pk=context['product'].pk)[0:3]
+        context['related_products'] = related_products
+        print(context)
+        return context
 
 
 def detail(request, pk):

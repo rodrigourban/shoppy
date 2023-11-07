@@ -8,8 +8,9 @@ from PIL import Image
 
 class Category(models.Model):
   parent = models.ForeignKey('self', related_name='children', on_delete=models.CASCADE, blank=True, null=True)
-  name = models.CharField(max_length=200)
+  name = models.CharField(max_length=20, unique=True)
   slug = models.SlugField(max_length=200, unique=True)
+  active = models.BooleanField(default=True)
 
   class Meta:
     ordering = ('name',)
@@ -64,16 +65,16 @@ class Product(models.Model):
 
     return thumbnail
 
-  # def get_absolute_url(self):
-  #     return reverse("item:detail", args=[self.id, self.slug])
+  def get_absolute_url(self):
+      return reverse("products:detail", args=[self.slug])
   
   def get_image_url(self):
     if self.image:
-      print('returning', self.image.url)
       return self.image.url
     return 'https://via.placeholder.com/240x240.jpg'
 
   def get_thumbnail(self):
+    return 'https://via.placeholder.com/240x240.jpg' # testing
     if self.thumbnail:
       return self.thumbnail.url
     else:
@@ -105,4 +106,16 @@ class Review(models.Model):
   rating = models.IntegerField(choices=RatingChoices.choices)
   content = models.TextField()
   created_by = models.ForeignKey(get_user_model(), related_name='reviews', on_delete=models.CASCADE)
+  created_at = models.DateTimeField(auto_now_add=True)
+
+class Favorite(models.Model):
+  product = models.ForeignKey(
+    Product,
+    on_delete=models.CASCADE
+  )
+  user = models.ForeignKey(
+    get_user_model(),
+    related_name='favorites',
+    on_delete=models.CASCADE
+  )
   created_at = models.DateTimeField(auto_now_add=True)

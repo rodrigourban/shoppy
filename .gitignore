@@ -45,3 +45,6 @@ venv.bak/
 
 .vscode
 migrations
+
+TODO.md
+.DS_STORE
