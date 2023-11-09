@@ -1,5 +1,6 @@
-from pathlib import Path
 from environs import Env
+from pathlib import Path
+import socket
 
 env = Env()
 env.read_env()
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_tailwind',
     'django_seed',
+    'debug_toolbar',
     # Apps
     'accounts.apps.AccountsConfig',
     'pages.apps.PagesConfig',
@@ -51,6 +53,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 ROOT_URLCONF = 'src.urls'
@@ -140,7 +143,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' # use terminal,
 
 # All auth
 AUTH_USER_MODEL = 'accounts.CustomUser'
-LOGIN_URL = '/login/'
+LOGIN_URL = '/accounts/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 ACCOUNT_LOGOOUT_REDIRECT = '/'
@@ -157,3 +160,7 @@ ACCOUNT_LOGOUT_ON_GET = True # logout without confirmation
 # Crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'tailwind'
 CRISPY_TEMPLATE_PACK = 'tailwind'
+
+# debug toolbar dockerized app
+hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+INTERNAL_IPS = [ip[:-1] + '1' for ip in ips]

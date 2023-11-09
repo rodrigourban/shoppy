@@ -189,38 +189,70 @@ class ProductTests(TestCase):
     self.assertEqual(new_product[0].stock, 3)
 
 
-  def test_review_update_stock_0_automatically_deactivate(self):
+  def test_product_update_stock_0_automatically_deactivate(self):
     response = self.client.put(reverse('products:update', args=[self.product.pk]), {'stock': 0})
     product = Product.objects.filter(name='New product name')
     self.assertEqual(product[0].stock, 0)
     self.assertEqual(product[0].available, False)
 
+  
+
+class FavoriteTests(TestCase):
+  @classmethod
+  def setUpTestData(cls):
+    # create product instances
+    new_user = get_user_model().objects.create_user(
+      username='customer',
+      email='customer@gmail.com',
+      password='customer123'
+    )
+    new_superuser = get_user_model().objects.create_superuser(
+      username='admin',
+      email='admin@gmail.com',
+      password='admin123'
+    )
+    cls.category = Category.objects.create(
+      name='clothes'
+    )
+    cls.product = Product.objects.create(
+      name='Nike shoes',
+      description='This are the famous nike shoes',
+      slug='nike-shoes',
+      price=14.5,
+      stock=5,
+      category=cls.category,
+      created_by=new_superuser
+    )
+    cls.favorite = Favorite.objects.create(
+      product=cls.product,
+      created_by=new_user
+    )
+
+  
+  def test_favorite_list_view_403_redirect(self):
+    response = self.client.get(reverse('products:favorite_list'))
+    self.assertEqual(response.status_code, 302)
+
   def test_favorite_list_view(self):
-    pass
+    self.client.login(email='customer@gmail.com', password='customer123')
+    response = self.client.get(reverse('products:favorite_list'))
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, 'Nike shoes')
+    self.assertTemplateUsed(response, 'products/favorite_list.html')
 
-  def test_favorite_list_view_403(self):
-    pass
+  def test_favorite_toggle_403(self):
+    self.client.logout()
+    response = self.client.get(reverse('products:toggle_favorite', args=[self.product.pk]))
+    self.assertEqual(response.status_code, 302) # redirect to login
 
-  def test_favorite_create_one(self):
-    pass
-
-  def test_favorite_create_one_403(self):
-    pass
-
-  def test_favorite_delete(self):
-    pass
-
-  def test_favorite_delete_403(self):
-    pass
-
-  def test_favorite_create_one_403(self):
-    pass
-
-  def test_favorite_redirect_to_product(self):
-    pass
-
-  def test_favorite_redirect_to_product_403(self):
-    pass
-
+  def test_favorite_toggle(self):
+    self.client.logout()
+    self.client.login(email='customer@gmail.com', password='customer123')
+    response = self.client.get(reverse('products:toggle_favorite', args=[self.product.pk]))
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, 'Add to favorite')
+    response = self.client.get(reverse('products:toggle_favorite', args=[self.product.pk]))
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, 'Remove favorite')
 
 
