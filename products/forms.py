@@ -50,3 +50,6 @@ class ProductUpdateForm(forms.ModelForm):
         'class': INPUT_CLASSES
       }),
     }
+
+class ProductSearchForm(forms.Form):
+  query = forms.CharField()

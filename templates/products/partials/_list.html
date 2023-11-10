@@ -1,84 +1,86 @@
+{% if product_list.count > 0 %}
+  <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {% for product in product_list %}
+    <li>
+      <a href="{{ product.get_absolute_url }}" class="group block overflow-hidden">
+        <img
+          src="{{ product.get_thumbnail }}"
+          alt="{{ product.name }}"
+          class="h-[350px] w-full object-cover transition duration-500 group-hover:scale-105 sm:h-[450px]"
+        />
+  
+        <div class="relative bg-white pt-3">
+          <h3
+            class="text-xs text-gray-700 group-hover:underline group-hover:underline-offset-4"
+          >
+            {{ product.name|truncatechars:30 }}
+          </h3>
+  
+          <p class="mt-2">
+            <span class="sr-only"> Regular Price </span>
+  
+            <span class="tracking-wider text-gray-900"> ${{ product.price }} USD </span>
+          </p>
+        </div>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
 
-<ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-  {% for product in product_list %}
-  <li>
-    <a href="{{ product.get_absolute_url }}" class="group block overflow-hidden">
-      <img
-        src="{{ product.get_thumbnail }}"
-        alt="{{ product.name }}"
-        class="h-[350px] w-full object-cover transition duration-500 group-hover:scale-105 sm:h-[450px]"
-      />
+  <div class="flex mt-5 justify-center">
 
-      <div class="relative bg-white pt-3">
-        <h3
-          class="text-xs text-gray-700 group-hover:underline group-hover:underline-offset-4"
+    <div class="inline-flex justify-center gap-1 content-center">
+        <a
+          href="{% if page_obj.has_previous %}?page={{page_obj.previous_page_number}}{% endif %}"
+          class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 {% if not page_obj.has_previous %}pointer-events-none{% endif %}"
         >
-          {{ product.name|truncatechars:30 }}
-        </h3>
-
-        <p class="mt-2">
-          <span class="sr-only"> Regular Price </span>
-
-          <span class="tracking-wider text-gray-900"> ${{ product.price }} USD </span>
-        </p>
+          <span class="sr-only">Prev Page</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3 w-3"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </a>
+    
+      <div>
+        <label for="PaginationPage" class="sr-only">{{page_obj.number}}</label>
+    
+        <input
+          type="number"
+          class="h-8 w-12 rounded border border-gray-100 bg-white p-0 text-center text-xs font-medium text-gray-900 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
+          min="1"
+          value="{{ page_obj.number }}"
+          id="PaginationPage"
+        />
       </div>
-    </a>
-  </li>
-  {% empty %}
-    <p> Ups! There are no products to be shown yet!</p>
-  {% endfor %}
-</ul>
-
-<div class="flex mt-5 justify-center">
-
-  <div class="inline-flex justify-center gap-1 content-center">
-      <a
-        href="{% if page_obj.has_previous %}?page={{page_obj.previous_page_number}}{% endif %}"
-        class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 {% if not page_obj.has_previous %}pointer-events-none{% endif %}"
-      >
-        <span class="sr-only">Prev Page</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-3 w-3"
-          viewBox="0 0 20 20"
-          fill="currentColor"
+    
+        <a
+          href="{% if page_obj.has_next %}?page={{page_obj.next_page_number}}{% endif %}"
+          class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 {% if not page_obj.has_next %}pointer-events-none{% endif %}"
         >
-          <path
-            fill-rule="evenodd"
-            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </a>
+          <span class="sr-only">Next Page</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-3 w-3"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </a>
+  </div>
+{% else %}
+  <p> Ups! There are no products matching your search!</p>
+{% endif %}
   
-    <div>
-      <label for="PaginationPage" class="sr-only">{{page_obj.number}}</label>
-  
-      <input
-        type="number"
-        class="h-8 w-12 rounded border border-gray-100 bg-white p-0 text-center text-xs font-medium text-gray-900 [-moz-appearance:_textfield] [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"
-        min="1"
-        value="{{ page_obj.number }}"
-        id="PaginationPage"
-      />
-    </div>
-  
-      <a
-        href="{% if page_obj.has_next %}?page={{page_obj.next_page_number}}{% endif %}"
-        class="inline-flex h-8 w-8 items-center justify-center rounded border border-gray-100 bg-white text-gray-900 rtl:rotate-180 {% if not page_obj.has_next %}pointer-events-none{% endif %}"
-      >
-        <span class="sr-only">Next Page</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          class="h-3 w-3"
-          viewBox="0 0 20 20"
-          fill="currentColor"
-        >
-          <path
-            fill-rule="evenodd"
-            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-            clip-rule="evenodd"
-          />
-        </svg>
-      </a>
-</div>

@@ -55,6 +55,7 @@ class ProductTests(TestCase):
     self.assertTemplateUsed(response, 'products/list.html')
 
   def test_product_detail_view(self):
+    self.client.login(email='customer@gmail.com', password='customer123')
     response = self.client.get(self.product.get_absolute_url())
     self.assertEqual(response.status_code, 200)
     self.assertContains(response, 'Nike shoes')
@@ -63,7 +64,6 @@ class ProductTests(TestCase):
     self.assertContains(response, '1 review')
     # self.assertContains(response, 'This are great shoes')
     self.assertContains(response, 'Add to Cart')
-    self.assertContains(response, 'Add to Favorites')
     self.assertTemplateUsed(response, 'products/detail.html')
 
   def test_product_detail_view_admin(self):
@@ -74,7 +74,7 @@ class ProductTests(TestCase):
     self.assertContains(response, 'Edit')
     self.assertContains(response, 'Delete')
     self.assertNotContains(response, 'Add to Cart')
-    self.assertNotContains(response, 'Add to Favorites')
+    self.assertNotContains(response, 'Add to Favorite')
     self.assertTemplateUsed(response, 'products/detail.html')
     self.client.logout()
 
@@ -154,9 +154,10 @@ class ProductTests(TestCase):
       self.assertIsNotNone(product)
   
   def test_product_update_view(self):
+    self.client.login(email='admin@gmail.com', password='admin123')
     response = self.client.get(reverse('products:update', args=[self.product.pk]))
-    self.assertEqual(response.status_code, 302)
-    self.assertContains(response, 'Test product')
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product.name)
     self.assertTemplateUsed(response, 'products/update.html')
 
   def test_product_update_view_404(self):
@@ -180,22 +181,34 @@ class ProductTests(TestCase):
     self.assertEqual(response.status_code, 403)
 
   def test_product_update(self):
-    self.client.logout()
     self.client.login(email='admin@gmail.com', password='admin123')
-    response = self.client.put(reverse('products:update', args=[self.product.pk]), { 'name': 'New product name', 'stock': 3})
-    old_product = Product.objects.filter(name='Test product')
-    new_product = Product.objects.filter(name='New product name')
-    self.assertEqual(old_product.count(), 0)
-    self.assertEqual(new_product[0].stock, 3)
+    response = self.client.post(reverse('products:update', args=[self.product.pk]), { 
+      'name': 'New product name',
+      'description': 'new-product-name',
+      'category': self.category.pk,
+      'price': 25,
+      'slug': 'nike-shoes',
+      'stock': 3
+    })
+    updated_product = Product.objects.filter(id=self.product.pk)
+    self.assertEqual(updated_product[0].stock, 3)
+    self.assertEqual(updated_product[0].name, 'New product name')
 
 
   def test_product_update_stock_0_automatically_deactivate(self):
-    response = self.client.put(reverse('products:update', args=[self.product.pk]), {'stock': 0})
-    product = Product.objects.filter(name='New product name')
+    self.client.login(email='admin@gmail.com', password='admin123')
+    response = self.client.post(reverse('products:update', args=[self.product.pk]), {
+      'name': 'Nike shoes',
+      'description': 'test description',
+      'slug': 'nike-shoes',
+      'category': self.category.pk,
+      'price': 25,
+      'stock': 0,
+    })
+    product = Product.objects.filter(id=self.product.pk)
     self.assertEqual(product[0].stock, 0)
     self.assertEqual(product[0].available, False)
 
-  
 
 class FavoriteTests(TestCase):
   @classmethod

@@ -40,19 +40,64 @@
       </button>
     </div>
 
+
     <div class="mt-4 lg:mt-8 lg:grid lg:grid-cols-4 lg:items-start lg:gap-8">
       <div class="hidden space-y-4 lg:block">
+        <form class='relative'>
+          <label for="Search" class="sr-only"> Search </label>
+    
+          <input
+            type="text"
+            id="query"
+            name='query'
+            placeholder="Search product"
+            class="w-full rounded-md border-gray-200 py-2.5 pe-10 shadow-sm sm:text-sm pl-2"
+            name='price_from'
+            hx-get='{% url "products:search_filter" %}'
+            hx-target='#product_list'
+            hx-trigger='input changed delay:500ms'
+            hx-include="#order_by, #price_from, #price_to"
+          />
+    
+          <span class="absolute inset-y-0 end-0 grid w-10 place-content-center">
+            <button type="button" class="text-gray-600 hover:text-gray-700">
+              <span class="sr-only">Search</span>
+    
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="h-4 w-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            </button>
+          </span>
+        </form>
+
+
         <div>
           <label for="SortBy" class="block text-xs font-medium text-gray-700">
             Sort By
           </label>
 
-          <select id="SortBy" class="mt-1 rounded border-gray-300 text-sm">
-            <option>Sort By</option>
-            <option value="Title, DESC">Title, DESC</option>
-            <option value="Title, ASC">Title, ASC</option>
-            <option value="Price, DESC">Price, DESC</option>
-            <option value="Price, ASC">Price, ASC</option>
+          <select 
+            id="order_by"
+            class="mt-1 rounded border-gray-300 text-sm" 
+            name='order_by'
+            hx-get='{% url "products:search_filter" %}'
+            hx-target='#product_list'
+            >
+            <option value="name">Name, ASC</option>
+            <option value="-name">Name, DESC</option>
+            <option value="-price">Price, DESC</option>
+            <option value="price">Price, ASC</option>
           </select>
         </div>
 
@@ -231,44 +276,51 @@
                 </span>
               </summary>
 
-              <div class="border-t border-gray-200 bg-white">
+              <div 
+                class="border-t border-gray-200 bg-white"
+              >
                 <header class="flex items-center justify-between p-4">
                   <span class="text-sm text-gray-700">
-                    The highest price is $600
+                    The highest price is $10000
                   </span>
-
-                  <button
-                    type="button"
-                    class="text-sm text-gray-900 underline underline-offset-4"
-                  >
-                    Reset
-                  </button>
                 </header>
 
                 <div class="border-t border-gray-200 p-4">
                   <div class="flex justify-between gap-4">
                     <label
-                      for="FilterPriceFrom"
+                      for="price_from"
                       class="flex items-center gap-2"
                     >
                       <span class="text-sm text-gray-600">$</span>
 
                       <input
                         type="number"
-                        id="FilterPriceFrom"
-                        placeholder="From"
-                        class="w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+                        id="price_from"
+                        placeholder="from"
+                        class="w-full rounded-md border-gray-200 shadow-sm sm:text-sm pl-2"
+                        name='price_from'
+                        value='1'
+                        hx-get='{% url "products:search_filter" %}'
+                        hx-target='#product_list'
+                        hx-include='#order_by, #query, #price_to'
+                        hx-trigger='keyup changed delay:500ms'
                       />
                     </label>
 
-                    <label for="FilterPriceTo" class="flex items-center gap-2">
+                    <label for="price_to" class="flex items-center gap-2">
                       <span class="text-sm text-gray-600">$</span>
 
                       <input
                         type="number"
-                        id="FilterPriceTo"
-                        placeholder="To"
-                        class="w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
+                        id="price_to"
+                        placeholder="to"
+                        class="w-full rounded-md border-gray-200 shadow-sm sm:text-sm pl-2"
+                        name='price_to'
+                        value='10000'
+                        hx-get='{% url "products:search_filter" %}'
+                        hx-target='#product_list'
+                        hx-include='#order_by, #query, #price_from'
+                        hx-trigger='keyup changed delay:500ms'
                       />
                     </label>
                   </div>
@@ -287,9 +339,4 @@
 
   </div>
 </section>
-{% block scripts %}
-<script>
-
-</script>
-{% endblock scripts %}
 {% endblock %}

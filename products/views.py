@@ -1,9 +1,11 @@
-from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.postgres.search import TrigramSimilarity
+from django.db.models import Q
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404, render
+from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse
-from django.shortcuts import get_object_or_404
 
 from .models import Favorite, Product, Category, Review
 from .forms import ProductCreateForm, ProductUpdateForm
@@ -13,23 +15,67 @@ class ProductsListView(ListView):
     model = Product
     context_object_name = 'product_list'
     template_name = 'products/list.html'
-    paginate_by = 10
+    paginate_by = 15
 
     def get_queryset(self):
-        filter_by = self.request.GET('filter', None)
-        order_by = self.request.GET('orderby', None)
-        page = self.request.GET('page', None)
-        print(f'filter {filter_by} order_by {order_by} page {page}')
-        # new_context = Product.objects.filter(
-        #     filter_by=filter_by
-        # ).order_by(order_by)
-        return super().get_queryset()
+        filters = {'available': True}
+        category = self.request.GET.get('category', None)
+        price_from = self.request.GET.get('price_from', 1)
+        price_to = self.request.GET.get('price_to', 10000)
+        order_by = self.request.GET.get('order_by', None)
+
+        filters['price__gte'] = price_from
+        filters['price__lte'] = price_to
+
+        if category:
+            filters['category'] = int(category)
+        _qs = Product.objects.filter(**filters)
+
+       
+        if order_by:
+            _qs = _qs.order_by(order_by)
+
+        return _qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         categories = Category.objects.filter(active=True)
         context['categories'] = categories
         return context
+
+class ProductsSearchView(ListView):
+    model = Product
+    context_object_name = 'product_list'
+    template_name = 'products/partials/_list.html'
+    paginate_by = 15
+
+    def get_queryset(self):
+        q_chain = Q(available=True)
+        category = self.request.GET.get('category', None)
+        price_from = self.request.GET.get('price_from', 1)
+        price_to = self.request.GET.get('price_to', 10000)
+        order_by = self.request.GET.get('order_by', None)
+        query = self.request.GET.get('query', None)
+
+        q_chain &= Q(price__gte=price_from)
+        q_chain &= Q(price__lte=price_to)
+
+        if category:
+            q_chain &= Q(category=int(category))
+
+        if query:
+            q_chain &= Q(Q(name_similarity__gt=0.1) | Q(description_similarity__gt=0.1))
+            _qs = Product.objects.annotate(
+                name_similarity=TrigramSimilarity('name', query),
+                description_similarity=TrigramSimilarity('description', query)
+            ).filter(q_chain)
+        else:
+            _qs = Product.objects.filter(q_chain)
+
+        if order_by:
+            _qs = _qs.order_by(order_by)
+
+        return _qs
 
 class ProductsDetailView(DetailView):
     model = Product
@@ -47,7 +93,6 @@ class ProductsDetailView(DetailView):
                 created_by=self.request.user
             ).exists()
         # select_related / fetch_related ?
-        print("context", context)
         return context
 
 class ProductsCreateView(
@@ -79,6 +124,11 @@ class ProductUpdateView(
     def get_success_url(self):
         return reverse('products:list')
 
+    def form_valid(self, form):
+        if form.instance.stock <= 0:
+            form.instance.available = False
+        return super().form_valid(form)
+
 class FavoriteListView(
     LoginRequiredMixin,
     ListView):
@@ -87,7 +137,6 @@ class FavoriteListView(
     context_object_name = 'favorite_list'
 
     def get_queryset(self):
-        print(self.request.user)
         favorite_list = Favorite.objects.filter(
             created_by=self.request.user
         )
@@ -120,4 +169,3 @@ def toggle_favorite(request, pk):
     <div>
     """
     )
-
