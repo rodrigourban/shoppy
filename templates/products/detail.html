@@ -1,7 +1,7 @@
 {% extends '_base.html' %}
 
 {% block title %}
-  {{item.name}}
+  {{ product.name }} Details
 {% endblock title %}
 
 {% block content %}
@@ -9,7 +9,7 @@
 <section class="text-gray-700 body-font overflow-hidden bg-white">
   <div class="container px-5 py-24 mx-auto">
     <div class="lg:w-4/5 mx-auto flex flex-wrap">
-      <img alt="{{ item.name }}" class="lg:w-1/2 w-full object-cover object-center rounded border border-gray-200" src="{{ item.get_image_url }}">
+      <img alt="{{ product.name }}" class="lg:w-1/2 w-full object-cover object-center rounded border border-gray-200" src="{{ product.get_image_url }}">
       <div class="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
         <h2 class="text-sm title-font text-gray-500 tracking-widest">
           <nav aria-label="Breadcrumb">
@@ -51,32 +51,13 @@
               </li>
           
               <li>
-                <a href="#" class="block transition hover:text-gray-700"> Shirts </a>
-              </li>
-          
-              <li class="rtl:rotate-180">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </li>
-          
-              <li>
-                <a href="#" class="block transition hover:text-gray-700"> Plain Tee </a>
+                <a href="#" class="block transition hover:text-gray-700"> {{ product.category.name }} </a>
               </li>
             </ol>
           </nav>
 
         </h2>
-        <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">{{ item.name }}</h1>
+        <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">{{ product.name }}</h1>
         <div class="flex mb-4">
           <span class="flex items-center">
             <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 text-red-500" viewBox="0 0 24 24">
@@ -94,7 +75,7 @@
             <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 text-red-500" viewBox="0 0 24 24">
               <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
             </svg>
-            <span class="text-gray-600 ml-3">4 Reviews</span>
+            <span class="text-gray-600 ml-3">{{ product.reviews.count }} review{{ product.reviews.count|pluralize}}</span>
           </span>
           <span class="flex ml-3 pl-3 py-2 border-l-2 border-gray-200">
             <a class="text-gray-500">
@@ -114,29 +95,37 @@
             </a>
           </span>
         </div>
-        <p class="leading-relaxed">{{ item.description }}</p>
+        <p class="leading-relaxed">{{ product.description }}</p>
         <div class="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5">
           <div class="flex">
-            <span class="mr-3">Product available</span>
+            <span class="mr-3">Stock: {{ product.stock }}</span>
           </div>
         </div>
         <div class="flex justify-between">
-          <span class="title-font font-medium text-2xl text-gray-900 pt-2">${{item.price}}</span>
+          <span class="title-font font-medium text-2xl text-gray-900 pt-2">${{product.price}}</span>
           <div class="inline-flex rounded-lg border border-gray-100 bg-gray-100 p-1">
-          
-            <button
+            {% if user.is_superuser %}
+            <a
+              href="#"
               class="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-500 hover:text-gray-700 focus:relative"
             >
-              <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
-                <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
-              </svg>
-          
-              Add to Favorites
-              
-            </button>
+              Delete
+            </a>
+            <a
+              href="#"
+              class="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm text-gray-500 hover:text-gray-700 focus:relative"
+            >
+              Edit 
+            </a>
+            {% else %}
+
+            {% if user.is_authenticated %}
+              {% include "products/partials/_favorite.html" with product_id=product.pk favorited=favorited %}
+            {% endif %}
+            
           
             <a
-              href="{% url "cart:add" item.pk %}"
+              href="#"
               class="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm text-blue-500 shadow-sm focus:relative"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
@@ -145,12 +134,24 @@
           
               Add to Cart
             </a>
+            {% endif %}
+           
           </div>
-      
         </div>
       </div>
     </div>
   </div>
 </section>
+
+{% if related_products %}
+  <section class="text-gray-700 body-font overflow-hidden bg-white">
+    <div class="container px-5 py-24 mx-auto">
+      Related products:
+      {% for related in related_products  %}
+        {{ related.name }}
+      {% endfor %}
+    </div>
+  <section>
+{% endif %}
 
 {% endblock content %}

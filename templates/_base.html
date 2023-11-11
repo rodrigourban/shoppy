@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.8" integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr" crossorigin="anonymous"></script>
 
     <title>{% block title %} {% endblock title %}</title>
   </head>
@@ -67,21 +68,49 @@
                     FAQ
                   </a>
                 </li>
-                {% if request.user.is_authenticated %}
+                {% if user.is_authenticated %}
                   <li>
                     <a
                       class="text-gray-500 transition hover:text-gray-500/75"
-                      href="{% url "products:new" %}"
+                      href=""
                     >
-                      New product
+                      Inbox
                     </a>
                   </li>
+                  {% if user.is_superuser %}
+                  
+                    <li>
+                      <a
+                        class="text-gray-500 transition hover:text-gray-500/75"
+                        href="{% url "products:create" %}"
+                      >
+                        New product
+                      </a>
+                    </li>
+                  {% else %}
+                    <li>
+                      <a
+                        class="text-gray-500 transition hover:text-gray-500/75"
+                        href=""
+                      >
+                        Cart
+                      </a>
+                    </li>
+                    <li>
+                      <a
+                        class="text-gray-500 transition hover:text-gray-500/75"
+                        href=""
+                      >
+                        My account
+                      </a>
+                    </li>
+                  {% endif %}
                 </ul>
                 {% endif %}
             </nav>
     
             <div class="flex items-center gap-4">
-              {% if request.user.is_authenticated %}
+              {% if user.is_authenticated %}
                 <a
                 class="rounded-md bg-teal-600 px-5 py-2.5 text-sm font-medium text-white shadow"
                 href="{% url "account_logout" %}"
@@ -192,8 +221,6 @@
       </div>
     </footer>
 
-    <script src="https://unpkg.com/htmx.org@1.7.0"></script>
     {% block scripts %}{% endblock scripts %}
   </body>
-  <html></html>
 </html>

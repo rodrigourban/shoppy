@@ -1,15 +1,24 @@
 from django.urls import path
 
-from .views import detail, new, delete, edit, list
+from .views import (
+    ProductsDetailView, 
+    ProductsListView, 
+    ProductsCreateView, 
+    ProductUpdateView,
+    ProductsSearchView,
+    FavoriteListView,
+    toggle_favorite
+)
 
 app_name = 'products'
 
 urlpatterns = [
-    path('', list, name='list'),
-    path('<int:pk>/', detail, name='detail'),
-    # path('<slug:category_slug>/', list, name='list_by_category'),
-    # path('<int:pk>/<slug:slug>/', detail, name='item_detail'),
-    path('new/', new, name='new'),
-    path('delete/<int:pk>/', delete, name='delete'),
-    path('edit/<int:pk>/', edit, name='edit'),
+    path('', ProductsListView.as_view(), name='list'),
+    path('create/', ProductsCreateView.as_view(), name='create'),
+    path('update/<int:pk>/', ProductUpdateView.as_view(), name='update'),
+    path('search/', ProductsSearchView.as_view(), name='search_filter'),
+    path('favorites/', FavoriteListView.as_view(), name='favorite_list'),
+    path('<slug:slug>/', ProductsDetailView.as_view(), name='detail'),
+    # htmx
+    path('toggle-favorite/<int:pk>/', toggle_favorite, name='toggle_favorite'),
 ]
