@@ -75,6 +75,8 @@ class ProductsSearchView(ListView):
         if order_by:
             _qs = _qs.order_by(order_by)
 
+        # print(_qs)
+
         return _qs
 
 class ProductsDetailView(DetailView):

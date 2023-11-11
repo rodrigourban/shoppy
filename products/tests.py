@@ -3,41 +3,70 @@ from django.test import TestCase
 from django.urls import reverse
 
 from .models import Category, Review, Product, Favorite
+
+USER_CUSTOMER = {
+  'username': 'customer',
+  'email': 'customer@gmail.com',
+  'password': 'customer123'
+}
+USER_ADMIN = {
+  'username':'admin',
+  'email':'admin@gmail.com',
+  'password':'admin123'
+}
+CATEGORY_1 = {
+  'name': 'clothes',
+  'slug': 'clothes'
+}
+CATEGORY_2 = {
+  'name': 'food',
+  'slug': 'food'
+}
+PRODUCT_1 = {
+  'name':'Nike shoes',
+  'slug': 'nike-shoes',
+  'description': 'This are the famous nike shoes',
+  'price': 14.5,
+  'stock': 5,
+}
+PRODUCT_2 = {
+  'name':'Green tea',
+  'slug': 'green-tea',
+  'description': 'Great beverage that helps you stay healthy',
+  'price': 5.5,
+  'stock': 1,
+}
+PRODUCT_3 = {
+  'name':'Leather Nike jacket',
+  'slug': 'leather-nike-jacket',
+  'description': 'This is a custom made stylish piece of clothing',
+  'price': 50,
+  'stock': 2,
+}
+REVIEW_1 = {
+  'rating':4,
+  'content':'This are great shoes'
+}
 class ProductTests(TestCase):
   @classmethod
   def setUpTestData(cls):
     # create product instances
-    new_user = get_user_model().objects.create_user(
-      username='customer',
-      email='customer@gmail.com',
-      password='customer123'
-    )
-    new_superuser = get_user_model().objects.create_superuser(
-      username='admin',
-      email='admin@gmail.com',
-      password='admin123'
-    )
-    cls.category = Category.objects.create(
-      name='clothes'
-    )
+    user = get_user_model().objects.create_user(**USER_CUSTOMER)
+    superuser = get_user_model().objects.create_superuser(**USER_ADMIN)
+    cls.category = Category.objects.create(**CATEGORY_1)
     cls.product = Product.objects.create(
-      name='Nike shoes',
-      description='This are the famous nike shoes',
-      slug='nike-shoes',
-      price=14.5,
-      stock=5,
+      **PRODUCT_1,
       category=cls.category,
-      created_by=new_superuser
+      created_by=superuser
     )
     cls.review = Review.objects.create(
+      **REVIEW_1,
       product=cls.product,
-      created_by=new_user,
-      rating=4,
-      content='This are great shoes'
+      created_by=user,
     )
     cls.favorite = Favorite.objects.create(
       product=cls.product,
-      created_by=new_user
+      created_by=user,
     )
 
   def test_product_display(self):
@@ -214,34 +243,19 @@ class FavoriteTests(TestCase):
   @classmethod
   def setUpTestData(cls):
     # create product instances
-    new_user = get_user_model().objects.create_user(
-      username='customer',
-      email='customer@gmail.com',
-      password='customer123'
-    )
-    new_superuser = get_user_model().objects.create_superuser(
-      username='admin',
-      email='admin@gmail.com',
-      password='admin123'
-    )
-    cls.category = Category.objects.create(
-      name='clothes'
-    )
+    user = get_user_model().objects.create_user(**USER_CUSTOMER)
+    superuser = get_user_model().objects.create_superuser(**USER_ADMIN)
+    cls.category = Category.objects.create(**CATEGORY_1)
     cls.product = Product.objects.create(
-      name='Nike shoes',
-      description='This are the famous nike shoes',
-      slug='nike-shoes',
-      price=14.5,
-      stock=5,
+      **PRODUCT_1,
       category=cls.category,
-      created_by=new_superuser
+      created_by=superuser
     )
     cls.favorite = Favorite.objects.create(
       product=cls.product,
-      created_by=new_user
+      created_by=user
     )
 
-  
   def test_favorite_list_view_403_redirect(self):
     response = self.client.get(reverse('products:favorite_list'))
     self.assertEqual(response.status_code, 302)
@@ -269,3 +283,105 @@ class FavoriteTests(TestCase):
     self.assertContains(response, 'Remove favorite')
 
 
+class ProductsSearchFilterTests(TestCase):
+  @classmethod
+  def setUpTestData(cls):
+    superuser = get_user_model().objects.create_superuser(**USER_ADMIN)
+    cls.url = reverse('products:search_filter')
+    cls.category = Category.objects.create(**CATEGORY_1)
+    cls.category2 = Category.objects.create(**CATEGORY_2)
+    cls.product = Product.objects.create(
+      **PRODUCT_1,
+      category=cls.category,
+      created_by=superuser
+    )
+    cls.product2 = Product.objects.create(
+      **PRODUCT_2,
+      category=cls.category2,
+      created_by=superuser
+    )
+    cls.product3 = Product.objects.create(
+      **PRODUCT_3,
+      category=cls.category,
+      created_by=superuser
+    )
+
+
+  def test_product_search_success(self):
+    response = self.client.get(f"{self.url}?query=Tea")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product2.name)
+    self.assertNotContains(response, self.product.name)
+    self.assertNotContains(response, self.product3.name)
+    self.assertTemplateUsed(response, 'products/partials/_list.html')
+
+    response = self.client.get(f"{self.url}?query=nik")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product.name)
+    self.assertContains(response, self.product3.name)
+    self.assertNotContains(response, self.product2.name)
+
+    response = self.client.get(f"{self.url}?query=healthy")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product2.name)
+    self.assertNotContains(response, self.product.name)
+    self.assertNotContains(response, self.product3.name)
+
+
+  def test_product_search_not_found(self):
+    response = self.client.get(f"{self.url}?query=guitar")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, 'Ups! There are no products matching your search, please try something different!')
+    self.assertTemplateUsed(response, 'products/partials/_list.html')
+
+  def test_product_filter_price_range_from(self):
+    response = self.client.get(f"{self.url}?price_from=6")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product.name)
+    self.assertNotContains(response, self.product2.name)
+    self.assertContains(response, self.product3.name)
+    self.assertTemplateUsed(response, 'products/partials/_list.html')
+
+    response = self.client.get(f"{self.url}?price_from=100")
+    self.assertEqual(response.status_code, 200)
+    self.assertNotContains(response, self.product.name)
+    self.assertNotContains(response, self.product2.name)
+    self.assertNotContains(response, self.product3.name)
+
+  def test_product_filter_price_range_from(self):
+    response = self.client.get(f"{self.url}?price_to=15")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product.name)
+    self.assertContains(response, self.product2.name)
+    self.assertNotContains(response, self.product3.name)
+    self.assertTemplateUsed(response, 'products/partials/_list.html')
+
+    response = self.client.get(f"{self.url}?price_to=5")
+    self.assertEqual(response.status_code, 200)
+    self.assertNotContains(response, self.product.name)
+    self.assertNotContains(response, self.product2.name)
+    self.assertNotContains(response, self.product3.name)
+
+  def test_product_filters_and_search_combined(self):
+    response = self.client.get(f"{self.url}?category=1&query=nike&price_from=5&price_to=16")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product.name)
+    self.assertNotContains(response, self.product2.name)
+    self.assertNotContains(response, self.product3.name)
+    self.assertTemplateUsed(response, 'products/partials/_list.html')
+
+  def test_product_filter_category(self):
+    response = self.client.get(f"{self.url}?category=1")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product.name)
+    self.assertContains(response, self.product3.name)
+    self.assertNotContains(response, self.product2.name)
+    self.assertTemplateUsed(response, 'products/partials/_list.html')
+
+  def test_product_filter_category_empty(self):
+    response = self.client.get(f"{self.url}?category=")
+    self.assertEqual(response.status_code, 200)
+    self.assertContains(response, self.product.name)
+    self.assertContains(response, self.product2.name)
+    self.assertContains(response, self.product3.name)
+    self.assertTemplateUsed(response, 'products/partials/_list.html')
