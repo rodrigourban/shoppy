@@ -30,7 +30,7 @@ PRODUCT_1 = {
   'stock': 5,
 }
 PRODUCT_2 = {
-  'name':'Green tea',
+  'name': 'Green tea',
   'slug': 'green-tea',
   'description': 'Great beverage that helps you stay healthy',
   'price': 5.5,
@@ -363,7 +363,7 @@ class ProductsSearchFilterTests(TestCase):
     self.assertNotContains(response, self.product3.name)
 
   def test_product_filters_and_search_combined(self):
-    response = self.client.get(f"{self.url}?category=1&query=nike&price_from=5&price_to=16")
+    response = self.client.get(f"{self.url}?category={self.category.pk}&query=nike&price_from=5&price_to=16")
     self.assertEqual(response.status_code, 200)
     self.assertContains(response, self.product.name)
     self.assertNotContains(response, self.product2.name)
@@ -371,7 +371,7 @@ class ProductsSearchFilterTests(TestCase):
     self.assertTemplateUsed(response, 'products/partials/_list.html')
 
   def test_product_filter_category(self):
-    response = self.client.get(f"{self.url}?category=1")
+    response = self.client.get(f"{self.url}?category={self.category.pk}")
     self.assertEqual(response.status_code, 200)
     self.assertContains(response, self.product.name)
     self.assertContains(response, self.product3.name)
@@ -385,3 +385,30 @@ class ProductsSearchFilterTests(TestCase):
     self.assertContains(response, self.product2.name)
     self.assertContains(response, self.product3.name)
     self.assertTemplateUsed(response, 'products/partials/_list.html')
+
+class ReviewTests(TestCase):
+  @classmethod
+  def setUpTestData(cls) -> None:
+      return super().setUpTestData()
+
+  def test_review_list_view(self):
+    # only let you review once you bought the product
+    pass
+
+  def test_review_list_view_forbidden(self):
+    # only let you review once you bought the product
+    pass
+
+  def test_review_list_view_404(self):
+    pass
+
+  def test_review_score_in_product_list_view(self):
+    pass
+
+  def test_review_create_view(self):
+    # only let you review once you bought the product
+    pass
+
+  def test_review_create_view_duplicated(self):
+    # Users can only review once per item
+    pass

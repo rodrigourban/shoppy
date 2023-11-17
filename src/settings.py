@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'debug_toolbar',
     # Apps
     'accounts.apps.AccountsConfig',
+    'dashboard.apps.DashboardConfig',
+    'communication.apps.CommunicationConfig',
     'pages.apps.PagesConfig',
     'products.apps.ProductsConfig',
 ]

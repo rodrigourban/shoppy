@@ -8,6 +8,10 @@ from django.urls import reverse
 from io import BytesIO
 from PIL import Image
 
+class AvailableProductManager(models.Manager):
+  def get_queryset(self):
+      return super().get_queryset().filter(available=True)
+
 class Category(models.Model):
   parent = models.ForeignKey('self', related_name='children', on_delete=models.CASCADE, blank=True, null=True)
   name = models.CharField(max_length=20, unique=True)
@@ -36,13 +40,16 @@ class Product(models.Model):
   price = models.DecimalField(max_digits=10, decimal_places=2)
   available = models.BooleanField(default=True)
   stock = models.PositiveIntegerField()
-  image = models.ImageField(upload_to='product_images', blank=True, null=True)
+  image = models.ImageField(upload_to='product_images', blank=True, null=True, default='no_image.png')
   thumbnail = models.ImageField(upload_to='product_images', blank=True, null=True)
   created_at = models.DateTimeField(auto_now_add=True)
   updated_at = models.DateTimeField(auto_now=True)
 
   category = models.ForeignKey(Category, related_name='products', on_delete=models.CASCADE)
   created_by = models.ForeignKey(get_user_model(), related_name='products', on_delete=models.CASCADE)
+
+  objects = models.Manager()
+  availables = AvailableProductManager()
 
   class Meta:
     ordering = ('name',)
@@ -76,7 +83,6 @@ class Product(models.Model):
     return 'https://via.placeholder.com/240x240.jpg'
 
   def get_thumbnail(self):
-    return 'https://via.placeholder.com/240x240.jpg' # testing
     if self.thumbnail:
       return self.thumbnail.url
     else:
@@ -107,12 +113,13 @@ class Review(models.Model):
   active = models.BooleanField(default=True)
   
   def __str__(self):
-    return self.contet
+    return self.content[:15]
 
 class Favorite(models.Model):
   product = models.ForeignKey(
     Product,
-    on_delete=models.CASCADE
+    related_name='favorites',
+    on_delete=models.CASCADE,
   )
   created_by = models.ForeignKey(
     get_user_model(),

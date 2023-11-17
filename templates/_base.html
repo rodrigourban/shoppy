@@ -15,9 +15,7 @@
     <!-- Messages -->
     {% if messages %}
       {% for message in messages %}
-        <div class="border-l-4 border-r-4 border-{{ message.tags }}-500 text-{{ message.tags }}-700 p-4" role="alert">
-          <p>{{ message }}</p>
-        </div>
+        {% include "_alert.html" with message=message %}
       {% endfor %}
     {% endif %}
     <!-- Navbar -->
@@ -72,7 +70,7 @@
                   <li>
                     <a
                       class="text-gray-500 transition hover:text-gray-500/75"
-                      href=""
+                      href="{% url "communication:list" %}"
                     >
                       Inbox
                     </a>
@@ -221,6 +219,25 @@
       </div>
     </footer>
 
-    {% block scripts %}{% endblock scripts %}
+    {% include "_modal.html" %}
+
+    <button
+      onclick='toggleModal()'
+    >Modal toggle</button>
+
+    <script>
+      const toggleModal = () => {
+        const modalElement = document.getElementById('modal');
+        const value = modalElement.style.display === 'none' ? 'block' : 'none';
+        modalElement.style.display = value;
+      }
+
+      const removeMessage = () => {
+        const messageElement = document.getElementById('alert-dialog');
+        messageElement.remove();
+      }
+    </script>
+    {% block scripts %}
+    {% endblock scripts %}
   </body>
 </html>

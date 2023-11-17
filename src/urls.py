@@ -9,6 +9,9 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     # local apps
     path('products/', include('products.urls', namespace='products')),
+    path('dashboard/', include('dashboard.urls', namespace='dashboard')),
+    path('communication/', include('communication.urls', namespace='communication')),
+
     path('', include('pages.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
