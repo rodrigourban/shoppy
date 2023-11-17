@@ -1,9 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404
 from django.views.generic import ListView, DetailView, CreateView, UpdateView
 from django.urls import reverse
 
@@ -18,7 +18,10 @@ class ProductsListView(ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        filters = {'available': True}
+        _qs = Product.availables.all()
+
+        filters = {}
+
         category = self.request.GET.get('category', None)
         price_from = self.request.GET.get('price_from', 1)
         price_to = self.request.GET.get('price_to', 10000)
@@ -29,9 +32,9 @@ class ProductsListView(ListView):
 
         if category:
             filters['category'] = int(category)
-        _qs = Product.objects.filter(**filters)
 
-       
+        _qs = _qs.filter(**filters)
+
         if order_by:
             _qs = _qs.order_by(order_by)
 
@@ -50,6 +53,8 @@ class ProductsSearchView(ListView):
     paginate_by = 15
 
     def get_queryset(self):
+        _qs = Product.availables.all()
+
         q_chain = Q(available=True)
         category = self.request.GET.get('category', None)
         price_from = self.request.GET.get('price_from', 1)
@@ -65,17 +70,15 @@ class ProductsSearchView(ListView):
 
         if query:
             q_chain &= Q(Q(name_similarity__gt=0.1) | Q(description_similarity__gt=0.1))
-            _qs = Product.objects.annotate(
+            _qs = Product.availables.annotate(
                 name_similarity=TrigramSimilarity('name', query),
                 description_similarity=TrigramSimilarity('description', query)
             ).filter(q_chain)
         else:
-            _qs = Product.objects.filter(q_chain)
+            _qs = _qs.filter(q_chain)
 
         if order_by:
             _qs = _qs.order_by(order_by)
-
-        # print(_qs)
 
         return _qs
 
@@ -84,17 +87,27 @@ class ProductsDetailView(DetailView):
     template_name = 'products/detail.html'
     context_object_name = 'product'
 
+    def get_queryset(self):
+        _qs = super().get_queryset()
+        
+        return _qs.prefetch_related('reviews')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        related_products = Product.objects.filter(
-            category=context['product'].category, available=True).exclude(pk=context['product'].pk)[0:3]
+        related_products = Product.availables.filter(
+            category=context['product'].category).exclude(pk=context['product'].pk)[0:3]
         context['related_products'] = related_products
+        context['score'] = Review.objects.filter(product=context['product'].pk).aggregate(
+            Sum('rating')
+        )
         if self.request.user.is_authenticated:
             context['favorited'] = Favorite.objects.filter(
                 product=context['product'],
                 created_by=self.request.user
             ).exists()
-        # select_related / fetch_related ?
+
+        print(context)
+
         return context
 
 class ProductsCreateView(
@@ -163,11 +176,14 @@ def toggle_favorite(request, pk):
 
     
     return HttpResponse(
-        f"""<div id="favorite_state" class="flex {'text-red-500 hover:text-red-700' if favorite else 'text-grey-500 hover:text-grey-700'}">
-    <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5 mr-1" viewBox="0 0 24 24">
-      <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"></path>
-    </svg>
-    {'Remove favorite' if favorite else 'Add to favorite'}
+        f"""
+        <div id="favorite_state" class="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm focus:relative {'text-red-500 hover:text-red-700' if favorite else 'text-grey-500 hover:text-grey-700'}">
+     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+    </svg>   
+    {'Unfavorite' if favorite else 'Favorite'}
     <div>
     """
     )
+
+    

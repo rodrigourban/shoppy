@@ -11,7 +11,7 @@
     <div class="lg:w-4/5 mx-auto flex flex-wrap">
       <img alt="{{ product.name }}" class="lg:w-1/2 w-full object-cover object-center rounded border border-gray-200" src="{{ product.get_image_url }}">
       <div class="lg:w-1/2 w-full lg:pl-10 lg:py-6 mt-6 lg:mt-0">
-        <h2 class="text-sm title-font text-gray-500 tracking-widest">
+        <h2 class="text-sm title-font text-gray-500">
           <nav aria-label="Breadcrumb">
             <ol class="flex items-center gap-1 text-sm text-gray-600">
               <li>
@@ -57,24 +57,14 @@
           </nav>
 
         </h2>
-        <h1 class="text-gray-900 text-3xl title-font font-medium mb-1">{{ product.name }}</h1>
+        <h1 class="text-gray-900 text-3xl title-font font-medium mb-1 mt-1">{{ product.name }}</h1>
         <div class="flex mb-4">
           <span class="flex items-center">
-            <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 text-red-500" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-            </svg>
-            <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 text-red-500" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-            </svg>
-            <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 text-red-500" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-            </svg>
-            <svg fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 text-red-500" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-            </svg>
-            <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 text-red-500" viewBox="0 0 24 24">
-              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-            </svg>
+            {% for i in '12345'|make_list  %}
+              <svg fill="{% if score.rating__sum >= forloop.counter %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 text-red-500" viewBox="0 0 24 24">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+              </svg>
+            {% endfor %}
             <span class="text-gray-600 ml-3">{{ product.reviews.count }} review{{ product.reviews.count|pluralize}}</span>
           </span>
           <span class="flex ml-3 pl-3 py-2 border-l-2 border-gray-200">
@@ -96,14 +86,11 @@
           </span>
         </div>
         <p class="leading-relaxed">{{ product.description }}</p>
-        <div class="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5">
-          <div class="flex">
-            <span class="mr-3">Stock: {{ product.stock }}</span>
-          </div>
+        <div class="flex mt-6 items-center pb-5 border-b-2 border-gray-200 mb-5 justify-between">
+            <div class="title-font font-medium text-xl text-gray-900 pt-2 mr-3">Stock: {{ product.stock }}</div>
+            <div class="title-font font-medium text-2xl text-gray-900 pt-2">${{product.price}}</div>
         </div>
-        <div class="flex justify-between">
-          <span class="title-font font-medium text-2xl text-gray-900 pt-2">${{product.price}}</span>
-          <div class="inline-flex rounded-lg border border-gray-100 bg-gray-100 p-1">
+        <div class="flex p-1 justify-between">
             {% if user.is_superuser %}
             <a
               href="#"
@@ -122,11 +109,24 @@
             {% if user.is_authenticated %}
               {% include "products/partials/_favorite.html" with product_id=product.pk favorited=favorited %}
             {% endif %}
+
+            <a
+              class="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm focus:relative"
+              hx-get="{% url "communication:create" product.pk %}"
+              hx-target='#modal-body'
+              onclick="toggleModal()"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" />
+              </svg>
+            
+              Contact
+            </a>
             
           
             <a
               href="#"
-              class="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2 text-sm text-blue-500 shadow-sm focus:relative"
+              class="inline-flex items-center gap-2 bg-white px-4 py-2 text-sm text-blue-500 focus:relative"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
                 <path fill-rule="evenodd" d="M6 5v1H4.667a1.75 1.75 0 00-1.743 1.598l-.826 9.5A1.75 1.75 0 003.84 19H16.16a1.75 1.75 0 001.743-1.902l-.826-9.5A1.75 1.75 0 0015.333 6H14V5a4 4 0 00-8 0zm4-2.5A2.5 2.5 0 007.5 5v1h5V5A2.5 2.5 0 0010 2.5zM7.5 10a2.5 2.5 0 005 0V8.75a.75.75 0 011.5 0V10a4 4 0 01-8 0V8.75a.75.75 0 011.5 0V10z" clip-rule="evenodd" />
@@ -136,7 +136,6 @@
             </a>
             {% endif %}
            
-          </div>
         </div>
       </div>
     </div>
@@ -146,10 +145,36 @@
 {% if related_products %}
   <section class="text-gray-700 body-font overflow-hidden bg-white">
     <div class="container px-5 py-24 mx-auto">
-      Related products:
-      {% for related in related_products  %}
-        {{ related.name }}
-      {% endfor %}
+      <h2 class="text-sm title-font text-gray-500 pb-2">
+        You might also like:
+      </h2>
+      <ul class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {% for related in related_products  %}  
+          <li>
+            <a href="{{ related.get_absolute_url }}" class="group block overflow-hidden">
+              <img
+                src="{{ related.get_thumbnail }}"
+                alt="{{ related.name }}"
+                class="h-[150px] w-[250px] object-cover transition duration-500 group-hover:scale-105 sm:h-[250px] sm:w-[350px]"
+              />
+        
+              <div class="relative bg-white pt-3">
+                <h3
+                  class="text-xs text-gray-700 group-hover:underline group-hover:underline-offset-4"
+                >
+                  {{ related.name|truncatechars:30 }}
+                </h3>
+        
+                <p class="mt-2">
+                  <span class="sr-only"> Regular Price </span>
+        
+                  <span class="tracking-wider text-gray-900"> ${{ related.price }} USD </span>
+                </p>
+              </div>
+            </a>
+          </li>
+          {% endfor %}
+      </ul>
     </div>
   <section>
 {% endif %}
