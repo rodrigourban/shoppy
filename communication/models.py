@@ -12,11 +12,9 @@ class Conversation(models.Model):
   class Meta:
     ordering = ('-modified_at',)
 
-  def has_unread_message(self):
-    pass
-
-  def get_last_message_created_at(self):
-    return Message.objects.filter(conversation=self.pk).last().values('created_at')
+  @property
+  def latest_message(self):
+    return Message.objects.filter(conversation=self.pk).last()
 
 
 class Message(models.Model):

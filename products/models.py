@@ -1,9 +1,10 @@
-from email.policy import default
+import itertools
 from django.db import models
 from django.core.files import File
 from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.urls import reverse
+from django.utils.text import slugify
 
 from io import BytesIO
 from PIL import Image
@@ -60,7 +61,23 @@ class Product(models.Model):
     ]
 
   def __str__(self) -> str:
-      return self.name
+    return self.name
+
+  def _generate_slug(self):
+    value = self.name
+    candidate = original = slugify(value, allow_unicode=True)
+    for i in itertools.count(1):
+      if not Product.objects.filter(slug=candidate).exists():
+        break
+      candidate = f'{original}{i}'
+    
+    self.slug = candidate
+    
+  def save(self):
+    if not self.pk:
+      # on model creation, generate slug
+      self._generate_slug()
+    return super().save()
 
   def make_thumbnail(self, image, default_size=(300, 300)):
     img = Image.open(image)

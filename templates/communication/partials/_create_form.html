@@ -1,6 +1,6 @@
 {% load tailwind_filters %}
 
-<form action="" method="post" class="mt-6">
+<form action="{% url "communication:create_detail" conversation.pk %}" method="post" class="mt-6">
   {% csrf_token %}
 
   {{form|crispy}}
