@@ -8,7 +8,7 @@
     <div class="sm:flex sm:items-center sm:justify-between">
       <div class="text-center sm:text-left">
         <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">
-          Messages
+          {% if user.is_superuser %}Admin Messages{% else %} Messages {% endif %}
         </h1>
       </div>
     </div>
@@ -38,7 +38,7 @@
                   <p class="whitespace-nowrap text-sm pl-1">New message</p>
                 </span>
               {% endif %}
-              <p class="mt-1 text-xs leading-5 text-gray-500">Sent on <time datetime="2023-01-23T13:23Z">{{ latest_message.created_at}}</time></p>
+              <p class="mt-1 text-xs leading-5 text-gray-500">Sent on <time datetime="{{latest_message.created_at}}">{{ latest_message.created_at|date:"j/n/Y H:i"}}</time></p>
           </div>
         </li>
     </a>

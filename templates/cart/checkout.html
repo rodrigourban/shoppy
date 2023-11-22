@@ -1,0 +1,193 @@
+{% extends '_base.html' %}
+
+{% block title %}Checkout{% endblock title %}
+
+{% block content %}
+<div class="mt-6 px-6 py-1 rounded-xl">
+  <h2 class="mb-12 text-2xl text-center">Checkout - Almost there</h2>
+  <div class="w-full pr-6">
+    
+      <div class="mb-6 p-6 bg-gray-100">
+        <h2 class="uppercase mb-5 text-lg">
+          Shipping Information
+        </h2>
+
+        <div class="mb-6 p-6 bg-gray-100" id="errors">
+          
+        </div>
+  
+        <div class="flex space-x-6">
+          <div class="w-1/2 mb-4">
+            <div class="mb-4">
+              <label for="" class="inline-block mb-2">First Name</label>
+              <input type="text" class="w-full p-5" value="{{request.user.first_name}}" name="first_name">
+            </div>
+          </div>
+  
+          <div class="w-1/2 mb-4">
+            <div class="mb-4">
+              <label for="" class="inline-block mb-2">Last Name</label>
+              <input type="text" class="w-full p-5" value="{{request.user.last_name}}" name="last_name">
+            </div>
+          </div>
+        </div>
+  
+        <div class="mb-4">
+          <label for="" class="inline-block mb-2">Address</label>
+          <input type="text" class="w-full p-5" name="address">
+        </div>
+  
+        <div class="flex space-x-6">
+          <div class="w-1/2 mb-4">
+            <div class="mb-4">
+              <label for="" class="inline-block mb-2">Zip Code</label>
+              <input type="text" class="w-full p-5" name="zipcode">
+            </div>
+          </div>
+  
+          <div class="w-1/2 mb-4">
+            <div class="mb-4">
+              <label for="" class="inline-block mb-2">City</label>
+              <input type="text" class="w-full p-5" name="city">
+            </div>
+          </div>
+        </div>
+
+      
+    </div>
+
+    <div class="mb-6 p-6 bg-gray-100">
+      <h2 class="uppercase mb-5 text-lg">
+        Contact Information
+      </h2>
+
+      <div class="mb-4">
+        <label for="" class="inline-block mb-2">Email</label>
+        <input type="email" class="w-full p-5" value="{{request.user.email}}" name="email">
+      </div>
+
+      <div class="mb-4">
+        <label for="" class="inline-block mb-2">Phone</label>
+        <input type="phone" class="w-full p-5" name="phone">
+      </div>
+    </div>
+
+    <div class="mb-6 p-6 bg-gray-100">
+      <h2 class="uppercase mb-5 text-lg">
+        Payment Information
+      </h2>
+    </div>
+
+  </div>
+</div>
+<div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl w-f">
+  <h2 class="mb-12 text-2xl text-center">Summary</h2>
+
+  <div class="mb-6 flex justify-around">
+    <span class="font-semibold">
+      Total:
+    </span>
+    <span>{{cart.get_total_cost}}</span>
+
+    <button
+      type="submit"
+      class="inline-block px-8 py-4 bg-purple-500 hover:bg-purple-800 text-white"
+      onclick="buy(event)"
+    >
+      Finish Checkout
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script type="application/javascript" src="https://js.stripe.com/v3/"></script>
+<script>
+  const errorsElement = document.querySelector('#errors');
+  function validateForm(data) {
+    let errors = [];
+    
+
+    if (data.first_name.length < 4) {
+      errors.push('First name cannot have less than 4 characters');
+    }
+
+    if (data.last_name.length < 4) {
+      errors.push('Last name cannot have less than 4 characters');
+    }
+
+    if (data.phone.length <= 10) {
+      errors.push('Phone cannot have less than 5 numbers');
+    }
+
+    if (data.address.length <= 5) {
+      errors.push('Address cannot have less than 5 characters');
+    }
+
+    if (data.zipcode.length < 4) {
+      errors.push('Zip code cannot have less than 4 characters');
+    }
+
+    if (data.city.length <= 4) {
+      errors.push('City cannot have less than 4 characters');
+    }
+
+    if (errors.length) {
+      let newElement = '<ul>'
+      errors.forEach((error) => {
+        html += `<li>${error}</li>`;
+      })
+      errorsElement.innerHtml = newElement + '</ul>';
+    }else{
+      errorsElement.innerHtml = '';
+    }
+  }
+
+  function buy(event) {
+    event.preventDefault();
+
+    let data = {
+      'first_name': document.querySelector('input[name=first_name]'),
+      'last_name': document.querySelector('input[name=last_name]'),
+      'email': document.querySelector('input[name=email]'),
+      'phone': document.querySelector('input[name=phone]'),
+      'address': document.querySelector('input[name=address]'),
+      'zipcode': document.querySelector('input[name=zipcode]')
+      'city': document.querySelector('input[name=city]')
+    }
+    const errors = validateForm(data);
+
+    if (errors.length) {
+      //show error message
+      console.log("errors");
+    } else {
+      const stripe = Stripe('{{pub_key}}');
+
+      fetch('/order/create/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFTOKEN': {{ csrf_token }},
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify(data);
+      })
+      .then((response) => {
+        return response.json();
+      })
+      .then((session)=>{
+        return stripe.redirectToCheckout({sessionId: session.session.id})
+      })
+      .then((result) => {
+        if(result.error){
+          alert(result.error.message);
+        }
+      })
+      .catch((error) => {
+        console.log('Error in stripe: ', error)
+      })
+    }
+    return false;
+  }
+</script>
+{% endblock script %}

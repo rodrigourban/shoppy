@@ -93,7 +93,7 @@ class MessageCreateView(LoginRequiredMixin,CreateView):
 
   def get_context_data(self, **kwargs):
       context = super().get_context_data(**kwargs)
-      context['conversation'] = Conversation.objects.get(pk=self.kwargs['conversation_id'])
+      context['conversation'] = get_object_or_404(Conversation, pk=self.kwargs['conversation_id'])
       last_message = context['conversation'].latest_message
       if last_message.read == False and last_message.created_by.pk != self.request.user.pk:
         last_message.read = True

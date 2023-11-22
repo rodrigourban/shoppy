@@ -1,0 +1,36 @@
+<div class="flex mb-6 pr-6" id="cart-item-{{product.properties.id}}">
+  <a class="w-1/4">
+    <img src="{{product.properties.get_thumbnail}}" alt="" class="hover:shadow-lg">
+  </a>
+
+  <div class="w-3/4 pl-6">
+    <div class="flex justify-between">
+      <a href="{% url 'products:detail' product.properties.slug %}" class="text-lg">{{product.properties.name}}</a>
+
+      <span class="mb-6 pt-1">${{product.properties.price}}</span>
+
+      <hr>
+
+      <div class="mb-6 flex items-center space-x-4 bg-purple-400">
+        <a
+          class="p-3 hover:bg-fuchsia-700"
+          hx-get="{% url 'cart:update_cart' product.properties.id 'decrement' %}"
+          hx-target="#cart-item-{{product.properties.id}}"
+          hx-swap="outerHTML"
+        >
+          -
+        </a>
+        <span>{{product.quantity}}</span>
+        <a
+          class="p-3 hover:bg-fuchsia-700"
+          hx-get="{% url 'cart:update_cart' product.properties.id 'increment' %}"
+          hx-target="#cart-item-{{product.properties.id}}"
+          hx-swap="outerHTML"
+        >
+          +
+        </a>
+
+      </div>
+    </div>
+  </div>
+</div>

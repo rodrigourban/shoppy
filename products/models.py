@@ -73,11 +73,11 @@ class Product(models.Model):
     
     self.slug = candidate
     
-  def save(self):
+  def save(self, *args, **kwargs):
     if not self.pk:
       # on model creation, generate slug
       self._generate_slug()
-    return super().save()
+    super(Product, self).save(*args, **kwargs)
 
   def make_thumbnail(self, image, default_size=(300, 300)):
     img = Image.open(image)
