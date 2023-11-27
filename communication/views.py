@@ -59,21 +59,6 @@ class ConversationCreateView(LoginRequiredMixin, CreateView):
       created_by=self.request.user
     )
     return redirect(reverse('communication:create_detail', args=[conversation.pk]))
-  
-
-# class ConversationDetailView(LoginRequiredMixin, DetailView):
-#   model = Conversation
-#   template_name = 'communication/detail.html'
-#   context_object_name = 'conversation'
-
-#   def get_context_data(self, **kwargs):
-#       context = super().get_context_data(**kwargs)
-#       last_message = context['conversation'].messages.latest('created_at')
-#       if last_message.read == False:
-#         last_message.read = True
-#         last_message.save()
-#       context['form'] = MessageForm()
-#       return context
 
 
 class MessageCreateView(LoginRequiredMixin,CreateView):

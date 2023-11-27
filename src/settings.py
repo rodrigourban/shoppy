@@ -41,11 +41,13 @@ INSTALLED_APPS = [
     'debug_toolbar',
     # Apps
     'accounts.apps.AccountsConfig',
-    'dashboard.apps.DashboardConfig',
     'communication.apps.CommunicationConfig',
+    'cart.apps.CartConfig',
+    'coupons.apps.CouponsConfig',
+    'dashboard.apps.DashboardConfig',
+    'order.apps.OrderConfig',
     'pages.apps.PagesConfig',
     'products.apps.ProductsConfig',
-    'cart.apps.CartConfig',
 ]
 
 MIDDLEWARE = [
@@ -170,3 +172,14 @@ CRISPY_TEMPLATE_PACK = 'tailwind'
 # debug toolbar dockerized app
 hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
 INTERNAL_IPS = [ip[:-1] + '1' for ip in ips]
+
+# session
+
+SESSION_COOKIE_AGE = 86400
+CART_SESSION_ID = 'cart'
+
+# stripe
+STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
+STRIPE_API_VERSION = env('STRIPE_API_VERSION')
+STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET')

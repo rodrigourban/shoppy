@@ -100,11 +100,12 @@
 </div>
 {% endblock %}
 
-{% block script %}
+{% block scripts %}
 <script type="application/javascript" src="https://js.stripe.com/v3/"></script>
 <script>
+  console.log("hey");
   const errorsElement = document.querySelector('#errors');
-  function validateForm(data) {
+  const validateForm = (data) => {
     let errors = [];
     
 
@@ -138,12 +139,13 @@
         html += `<li>${error}</li>`;
       })
       errorsElement.innerHtml = newElement + '</ul>';
-    }else{
+    } else {
       errorsElement.innerHtml = '';
     }
+    return errors
   }
 
-  function buy(event) {
+  const buy = (event) => {
     event.preventDefault();
 
     let data = {
@@ -152,7 +154,7 @@
       'email': document.querySelector('input[name=email]'),
       'phone': document.querySelector('input[name=phone]'),
       'address': document.querySelector('input[name=address]'),
-      'zipcode': document.querySelector('input[name=zipcode]')
+      'zipcode': document.querySelector('input[name=zipcode]'),
       'city': document.querySelector('input[name=city]')
     }
     const errors = validateForm(data);
@@ -167,10 +169,10 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFTOKEN': {{ csrf_token }},
+          'X-CSRFTOKEN': '{{ csrf_token }}',
         },
         credentials: 'same-origin',
-        body: JSON.stringify(data);
+        body: JSON.stringify(data)
       })
       .then((response) => {
         return response.json();
@@ -190,4 +192,4 @@
     return false;
   }
 </script>
-{% endblock script %}
+{% endblock scripts %}

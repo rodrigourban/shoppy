@@ -71,6 +71,7 @@ class Cart(object):
     self.save()
 
   def remove(self, product_id):
+    product_id = str(product_id)
     if product_id in self.cart:
       del self.cart[product_id]
       self.save()
@@ -86,6 +87,4 @@ class Cart(object):
     return sum(product['properties'].price * product['quantity'] for product in self.cart.values())
 
   def get_product(self, product_id):
-    print("Hey", self.cart[str(product_id)])
-    print("Hey", self.cart)
     return self.cart[str(product_id)]

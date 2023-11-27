@@ -66,6 +66,12 @@
                     FAQ
                   </a>
                 </li>
+                <li
+                  hx-get="{% url "cart:hx_menu_cart" %}"
+                  hx-trigger="update-menu-cart from:body"
+                >
+                  {% include "cart/partials/_menu_cart.html" %}
+                </li> 
                 {% if user.is_authenticated %}
                   <li>
                     <a
@@ -86,9 +92,6 @@
                       </a>
                     </li>
                   {% else %}
-                    <li>
-                      {% include "cart/partials/_menu_cart.html" %}
-                    </li>
                     <li>
                       <a
                         class="text-gray-500 transition hover:text-gray-500/75"

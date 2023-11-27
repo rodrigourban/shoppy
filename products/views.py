@@ -106,8 +106,6 @@ class ProductsDetailView(DetailView):
                 created_by=self.request.user
             ).exists()
 
-        print(context)
-
         return context
 
 class ProductsCreateView(

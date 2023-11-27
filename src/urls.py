@@ -12,6 +12,8 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls', namespace='dashboard')),
     path('communication/', include('communication.urls', namespace='communication')),
     path('cart/', include('cart.urls', namespace='cart')),
+    path('order/', include('order.urls', namespace='order')),
+    path('coupons/', include('coupons.urls', namespace='coupons')),
 
     path('', include('pages.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
