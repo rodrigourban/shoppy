@@ -1,52 +1,62 @@
 {% extends '_base.html' %}
-
-{% block title %}Inbox{% endblock title %}
-
+{% block title %}
+    Inbox
+{% endblock title %}
 {% block content %}
-<header class="bg-gray-50">
-  <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-    <div class="sm:flex sm:items-center sm:justify-between">
-      <div class="text-center sm:text-left">
-        <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">
-          {% if user.is_superuser %}Admin Messages{% else %} Messages {% endif %}
-        </h1>
-      </div>
-    </div>
-  </div>
-</header>
-<div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-  <ul role="list" class="divide-y divide-gray-100">
-    {% for conversation in conversations %}
-    {% with latest_message=conversation.latest_message %}
-    <a href="{% url "communication:create_detail" conversation.id %}">
-      <li class="flex justify-between gap-x-6 py-5">
-          <div class="flex min-w-0 gap-x-4">
-            <img class="h-12 w-12 flex-none rounded-full bg-gray-50" src="{{ conversation.product.get_thumbnail }}" alt="{{ conversation.product.name }}">
-            <div class="min-w-0 flex-auto pl-2">
-              <p class="text-sm font-semibold leading-6 text-gray-900">{{ conversation.product.name }}</p>
-              <p class="mt-1 truncate text-xs leading-5 text-gray-500">{{ latest_message.content|truncatechars:40 }}</p>
+    <header class="bg-gray-50">
+        <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+            <div class="sm:flex sm:items-center sm:justify-between">
+                <div class="text-center sm:text-left">
+                    <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">
+                        {% if user.is_superuser %}
+                            Admin Messages
+                        {% else %}
+                            Messages
+                        {% endif %}
+                    </h1>
+                </div>
             </div>
-          </div>
-          <div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
-              {% if not latest_message.read and latest_message.created_by != request.user %}
-                <span
-                  class="inline-flex items-center justify-center rounded-full bg-red-100 px-2.5 py-0.5 text-red-700"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
-                  </svg>
-                  <p class="whitespace-nowrap text-sm pl-1">New message</p>
-                </span>
-              {% endif %}
-              <p class="mt-1 text-xs leading-5 text-gray-500">Sent on <time datetime="{{latest_message.created_at}}">{{ latest_message.created_at|date:"j/n/Y H:i"}}</time></p>
-          </div>
-        </li>
-    </a>
-    
-    {% endwith %}
-    {% empty %}
-    <p>No conversations yet.</p>
-    {% endfor %}
-  </ul>
-</div>
+        </div>
+    </header>
+    <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <ul role="list" class="divide-y divide-gray-100">
+            {% for conversation in conversations %}
+                {% with latest_message=conversation.latest_message %}
+                    <a href="{% url "communication:create_detail" conversation.id %}">
+                        <li class="flex justify-between gap-x-6 py-5">
+                            <div class="flex min-w-0 gap-x-4">
+                                <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                     src="{{ conversation.product.get_thumbnail }}"
+                                     alt="{{ conversation.product.name }}">
+                                <div class="min-w-0 flex-auto pl-2">
+                                    <p class="text-sm font-semibold leading-6 text-gray-900">{{ conversation.product.name }}</p>
+                                    <p class="mt-1 truncate text-xs leading-5 text-gray-500">{{ latest_message.content|truncatechars:40 }}</p>
+                                </div>
+                            </div>
+                            <div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
+                                {% if not latest_message.read and latest_message.created_by != request.user %}
+                                    <span class="inline-flex items-center justify-center rounded-full bg-red-100 px-2.5 py-0.5 text-red-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg"
+                                             fill="none"
+                                             viewBox="0 0 24 24"
+                                             stroke-width="1.5"
+                                             stroke="currentColor"
+                                             class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                        </svg>
+                                        <p class="whitespace-nowrap text-sm pl-1">New message</p>
+                                    </span>
+                                {% endif %}
+                                <p class="mt-1 text-xs leading-5 text-gray-500">
+                                    Sent on <time datetime="{{ latest_message.created_at }}">{{ latest_message.created_at|date:"j/n/Y H:i" }}</time>
+                                </p>
+                            </div>
+                        </li>
+                    </a>
+                {% endwith %}
+            {% empty %}
+                <p>No conversations yet.</p>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}

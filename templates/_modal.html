@@ -1,18 +1,21 @@
-<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true" id='modal' style='display: none;'>
-  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-
-  <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      
-      <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-        <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-          <div class="sm:flex sm:flex-row-reverse">
-            <span class="inline-flex w-full justify-center bg-white px-4 py-2 text-sm font-semibold text-gray-900 rounded-full hover:bg-gray-50 sm:mt-0 sm:w-auto hover:cursor-pointer" onclick='toggleModal()'>x</span>
-          </div>
-          <div class="sm:flex sm:items-start" id="modal-body">
-          </div>
+<div class="relative z-10"
+     aria-labelledby="modal-title"
+     role="dialog"
+     aria-modal="true"
+     id='modal'
+     style='display: none'>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+    <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:flex-row-reverse">
+                        <span class="inline-flex w-full justify-center bg-white px-4 py-2 text-sm font-semibold text-gray-900 rounded-full hover:bg-gray-50 sm:mt-0 sm:w-auto hover:cursor-pointer"
+                              onclick='toggleModal()'>x</span>
+                    </div>
+                    <div class="sm:flex sm:items-start" id="modal-body"></div>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
 </div>

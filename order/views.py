@@ -1,137 +1,123 @@
-from celery import shared_task
 import json
+
 import stripe
 import weasyprint
 from django.conf import settings
-from django.core.mail import send_mail
-from django.http import JsonResponse, HttpResponse
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views import View
+from django.core.mail import send_mail
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
-from django.shortcuts import render, get_object_or_404
+from django.views import View
+
+from cart.cart import Cart
+from celery import shared_task
 
 from .models import Order, OrderItem
-from cart.cart import Cart
 
 
 class OrderCreateView(LoginRequiredMixin, View):
-  def post(self, request, *args, **kwargs):
-    cart = Cart(request)
-    data = json.loads(request.body)
-    total_cost = 0
-    
+    def post(self, request, *args, **kwargs):
+        cart = Cart(request)
+        data = json.loads(request.body)
+        total_cost = 0
 
-    items_in_cart = []
-    for item in cart:
-        product = item['properties']
-        total_cost += product.price * int(item['quantity'])
+        items_in_cart = []
+        for item in cart:
+            product = item["properties"]
+            total_cost += product.price * int(item["quantity"])
 
-        items_in_cart.append({
-          'price_data': {
-            'currency': 'usd',
-            'product_data': {
-              'name': product.name
-            },
-            'unit_amount': int(product.price * 100) # Stripe only accepts integer (499 -> 4,99)
-          },
-          'quantity': item['quantity']
-        })
+            items_in_cart.append(
+                {
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {"name": product.name},
+                        "unit_amount": int(
+                            product.price * 100
+                        ),  # Stripe only accepts integer (499 -> 4,99)
+                    },
+                    "quantity": item["quantity"],
+                }
+            )
 
-    stripe.api_key = settings.STRIPE_SECRET_KEY
-    session = stripe.checkout.Session.create(
-      payment_method_types=['card'],
-      line_items=items_in_cart,
-      mode='payment',
-      success_url='http://localhost:8000/cart/success/',
-      cancel_url='http://localhost:8000/cart/'
-    )
-    payment_intent = session.payment_intent
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=items_in_cart,
+            mode="payment",
+            success_url="http://localhost:8000/cart/success/",
+            cancel_url="http://localhost:8000/cart/",
+        )
+        payment_intent = session.payment_intent
 
-    
+        order = Order.objects.create(
+            user=request.user,
+            first_name=data["first_name"],
+            last_name=data["last_name"],
+            email=data["email"],
+            address=data["address"],
+            zipcode=data["zipcode"],
+            city=data["city"],
+            phone=data["phone"],
+            paid=True,
+            paid_amount=total_cost,
+        )
 
-    order = Order.objects.create(
-      user=request.user,
-      first_name = data['first_name'],
-      last_name = data['last_name'],
-      email = data['email'],
-      address = data['address'],
-      zipcode = data['zipcode'],
-      city = data['city'],
-      phone = data['phone'],
-      paid=True,
-      paid_amount=total_cost
-    )
+        order.payment_intent = payment_intent
+        order.paid_amount = total_cost
+        order.paid = True
+        order.save()
 
-    order.payment_intent = payment_intent
-    order.paid_amount = total_cost
-    order.paid = True
-    order.save()
+        for item in cart:
+            product = item["properties"]
+            quantity = int(item["quantity"])
+            price = product.price * quantity
 
-    for item in cart:
-      product = item['properties']
-      quantity = int(item['quantity'])
-      price = product.price * quantity
+            item = OrderItem.objects.create(
+                order=order, product=product, price=price, quantity=quantity
+            )
 
-      item = OrderItem.objects.create(
-        order=order,
-        product=product,
-        price=price,
-        quantity=quantity
-      )
+        cart.clear()
+        # send an async task for e-mail confirmation
+        order_created.delay(order.id)
 
-    cart.clear()
-    # send an async task for e-mail confirmation
-    order_created.delay(order.id)
-
-    return JsonResponse({
-      'session': session,
-      'order': payment_intent
-    })
+        return JsonResponse({"session": session, "order": payment_intent})
 
 
 @shared_task
 def order_created(order_id):
-  """ 
-  Task to async send an email notification when an order
-  was created successfully.
-  """
-  order = Order.objects.get(id=order_id)
-  subject = f'Order number {order.id}'
-  message = f'Dear {order.first_name}, \n\n' \
-            f'You have succesfully placed an order.' \
-            f'Your order ID is {order.id}'
-  mail_sent = send_mail(
-    subject,
-    message,
-    'admin@shoppy.com',
-    [order.email]
-  )
+    """
+    Task to async send an email notification when an order
+    was created successfully.
+    """
+    order = Order.objects.get(id=order_id)
+    subject = f"Order number {order.id}"
+    message = (
+        f"Dear {order.first_name}, \n\n"
+        f"You have succesfully placed an order."
+        f"Your order ID is {order.id}"
+    )
+    mail_sent = send_mail(subject, message, "admin@shoppy.com", [order.email])
 
-  return mail_sent
+    return mail_sent
+
 
 @staff_member_required
 def admin_order_detail(request, order_id):
-  order = get_object_or_404(Order, id=order_id)
-  return render(
-    request,
-    'admin/order/detail.html',
-    {'order': order}
-  )
+    order = get_object_or_404(Order, id=order_id)
+    return render(request, "admin/order/detail.html", {"order": order})
 
 
 @staff_member_required
 def admin_order_pdf(request, order_id):
-  order = get_object_or_404(Order, id=order_id)
-  html = render_to_string(
-    'order/pdf.html',
-    {'order': order}
-  )
-  response = HttpResponse(content_type='application/pdf')
-  response['Content-Disposition'] = f'filename=order_{order.id}.pdf'
-  weasyprint.HTML(string=html).write_pdf(
-    response,
-    stylesheets=[weasyprint.CSS(settings.STATIC_ROOT / 'css/pdf.css')]
-  )
+    order = get_object_or_404(Order, id=order_id)
+    html = render_to_string("order/pdf.html", {"order": order})
+    response = HttpResponse(content_type="application/pdf")
+    response["Content-Disposition"] = f"filename=order_{order.id}.pdf"
+    weasyprint.HTML(string=html).write_pdf(
+        response,
+        stylesheets=[weasyprint.CSS(settings.STATIC_ROOT / "css/pdf.css")],
+    )
 
-  return response
+    return response

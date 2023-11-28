@@ -1,39 +1,42 @@
 {% extends '_base.html' %}
-{% block title %}Conversation{% endblock title %}
-
+{% block title %}
+    Conversation
+{% endblock title %}
 {% block content %}
-<div class="p-10">
-  
-  <span class="flex">
-    <a
-      class="inline-block text-indigo-600 pt-2 pr-2"
-      href="{% url "communication:list" %}"
-    >
-      <span class="sr-only"> Back </span>
-
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-      </svg>
-      
-    </a>
-    <h1 class="mb-6 text-3xl">Conversation</h1>
-  </span>
-  <div class="space-y-6">
-    {% for message in conversation.messages.all  %}
-      <div class="p-6 flex {% if message.created_by == request.user %}bg-blue-100{% else %}bg-gray-100{% endif %}  rounded-xl">
-        <div>
-          <p class="mb-4">
-            <strong>
-            {% if message.created_by.is_superuser %}Admin{% else %}{{message.created_by.username}}{% endif %}
-            </strong> @ {{message.created_at}}
-            <p>{{message.content}}</p>
-          </p>
+    <div class="p-10">
+        <span class="flex">
+            <a class="inline-block text-indigo-600 pt-2 pr-2"
+               href="{% url "communication:list" %}">
+                <span class="sr-only">Back</span>
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     fill="none"
+                     viewBox="0 0 24 24"
+                     stroke-width="1.5"
+                     stroke="currentColor"
+                     class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+            </a>
+            <h1 class="mb-6 text-3xl">Conversation</h1>
+        </span>
+        <div class="space-y-6">
+            {% for message in conversation.messages.all %}
+                <div class="p-6 flex {% if message.created_by == request.user %}bg-blue-100{% else %}bg-gray-100{% endif %}  rounded-xl">
+                    <div>
+                        <p class="mb-4">
+                            <strong>
+                                {% if message.created_by.is_superuser %}
+                                    Admin
+                                {% else %}
+                                    {{ message.created_by.username }}
+                                {% endif %}
+                            </strong> @ {{ message.created_at }}
+                            <p>{{ message.content }}</p>
+                        </p>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
-      </div>
-    {% endfor %}
-  </div>
-
-  {% include 'communication/partials/_create_form.html' with form=form conversation=conversation %}
-
-</div>
+        {% include 'communication/partials/_create_form.html' with form=form conversation=conversation %}
+    </div>
 {% endblock %}
