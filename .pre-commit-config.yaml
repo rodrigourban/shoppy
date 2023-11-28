@@ -25,3 +25,4 @@ repos:
     hooks:
       - id: djlint-reformat-django
       - id: djlint-django
+        args: [-i, H006]

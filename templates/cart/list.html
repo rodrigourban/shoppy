@@ -1,4 +1,4 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 {% block title %}
     Your Cart
 {% endblock title %}
@@ -12,7 +12,7 @@
                 <div class="mt-8">
                     <ul class="space-y-4">
                         {% for product in cart %}
-                            {% include 'cart/partials/_product.html' %}
+                            {% include "cart/partials/_product.html" %}
                         {% endfor %}
                     </ul>
                     <div class="mt-8 flex justify-end border-t border-gray-100 pt-8">
@@ -37,7 +37,7 @@
                                     <dd hx-get="{% url 'cart:hx_total_cost' %}"
                                         hx-trigger="update-menu-cart from:body"
                                         hx-swap="innerHTML">
-                                        {% include 'cart/partials/_total_cost.html' %}
+                                        {% include "cart/partials/_total_cost.html" %}
                                     </dd>
                                 </div>
                             </dl>
@@ -68,4 +68,4 @@
             </div>
         </div>
     </section>
-{% endblock %}
+{% endblock content %}

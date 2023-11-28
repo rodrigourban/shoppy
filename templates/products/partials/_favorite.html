@@ -1,8 +1,8 @@
 <button hx-get='{% url "products:toggle_favorite" product_id %}'
         hx-target='#favorite_state'
         hx-swap='outerHTML'>
-    <div id="favorite_state"
-         class="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm focus:relative {% if favorited %}text-red-500 hover:text-red-700{% else %} text-grey-500 hover:text-grey-700 {% endif %}">
+    <span id="favorite_state"
+          class="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm focus:relative {% if favorited %}text-red-500 hover:text-red-700{% else %} text-grey-500 hover:text-grey-700 {% endif %}">
         <svg xmlns="http://www.w3.org/2000/svg"
              fill="none"
              viewBox="0 0 24 24"
@@ -16,5 +16,5 @@
         {% else %}
             Favorite
         {% endif %}
-        <div>
-        </button>
+    </span>
+</button>

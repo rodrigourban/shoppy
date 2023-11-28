@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -24,7 +24,7 @@
             <div class="mx-auto max-w-screen-xl px-4 sm:px-6 lg:px-8">
                 <div class="flex h-16 items-center justify-between">
                     <div class="flex-1 md:flex md:items-center md:gap-12">
-                        <a class="block text-teal-600" href="/">
+                        <a class="block text-teal-600" href="{% url 'pages:home' %}">
                             <span class="sr-only">Home</span>
                             <svg class="h-8"
                                  viewBox="0 0 28 24"
@@ -98,7 +98,8 @@
         </header>
         <!-- CONTENT -->
         <div>
-            {% block content %}{% endblock %}
+            {% block content %}
+            {% endblock content %}
         </div>
         <!-- FOOTER -->
         <footer class="bg-gray-50">
@@ -122,7 +123,7 @@
                         </svg>
                     </div>
                     <p class="mt-4 text-center text-sm text-gray-500 lg:mt-0 lg:text-right">
-                        Copyright Rodrigo Urban &copy; {% now  "Y" %}. All rights reserved.
+                        Copyright Rodrigo Urban &copy; {% now "Y" %}. All rights reserved.
                     </p>
                 </div>
             </div>

@@ -1,4 +1,4 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 {% block title %}
     Explore our Products
 {% endblock title %}
@@ -28,7 +28,7 @@
             </div>
             <div class="mt-4 lg:mt-8 lg:grid lg:grid-cols-4 lg:items-start lg:gap-8">
                 <div class="hidden space-y-4 lg:block">
-                    <form class='relative'>
+                    <form class="relative">
                         <label for="Search" class="sr-only">Search</label>
                         <input type="text"
                                id="query"
@@ -137,9 +137,10 @@
                     </div>
                 </div>
                 <!-- Product list -->
-                <div class="lg:col-span-3" id='product_list'>
-                    {% include 'products/partials/_list.html' with product_list=product_list page_obj=page_obj %}
+                <div class="lg:col-span-3" id="product_list">
+                    {% include "products/partials/_list.html" with product_list=product_list page_obj=page_obj %}
                 </div>
             </div>
-        </section>
-    {% endblock %}
+        </div>
+    </section>
+{% endblock content %}

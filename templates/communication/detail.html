@@ -1,4 +1,4 @@
-{% extends '_base.html' %}
+{% extends "_base.html" %}
 {% block title %}
     Conversation
 {% endblock title %}
@@ -37,6 +37,6 @@
                 </div>
             {% endfor %}
         </div>
-        {% include 'communication/partials/_create_form.html' with form=form conversation=conversation %}
+        {% include "communication/partials/_create_form.html" with form=form conversation=conversation %}
     </div>
-{% endblock %}
+{% endblock content %}
