@@ -95,6 +95,7 @@ class Cart(object):
 
     @property
     def total_price(self):
+        print("hey")
         for product_id in self.cart.keys():
             self.cart[str(product_id)]["properties"] = Product.objects.get(
                 pk=product_id

@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% load crispy_forms_tags %}
 {% block title %}
     Your Cart
 {% endblock title %}
@@ -15,7 +16,7 @@
                             {% include "cart/partials/_product.html" %}
                         {% endfor %}
                     </ul>
-                    {% if cart.length > 0 %}
+                    {% if cart|length > 0 %}
                         <div class="mt-8 flex justify-end border-t border-gray-100 pt-8">
                             <div class="w-screen max-w-lg space-y-4">
                                 <dl class="space-y-0.5 text-sm text-gray-700">
@@ -51,8 +52,8 @@
                                 <p>Apply a coupon:</p>
                                 <form action="{% url "coupons:apply" %}" method="post">
                                     {% csrf_token %}
-                                    {{ coupon_apply_form }}
-                                    <input type="submit" value="Apply">
+                                    {{ coupon_apply_form|crispy }}
+                                    <button type="submit">Apply</button>
                                 </form>
                                 <div class="flex justify-end">
                                     <a href="{% url "cart:checkout" %}"
