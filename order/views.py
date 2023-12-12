@@ -41,6 +41,7 @@ class OrderCreateView(LoginRequiredMixin, View):
                 }
             )
 
+        # create a service for this to handle multiple payment methods
         stripe.api_key = settings.STRIPE_SECRET_KEY
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
@@ -84,7 +85,7 @@ class OrderCreateView(LoginRequiredMixin, View):
 
         cart.clear()
         # send an async task for e-mail confirmation
-        order_created.delay(order.id)
+        # order_created.delay(order.id)
 
         return JsonResponse({"session": session, "order": payment_intent})
 
