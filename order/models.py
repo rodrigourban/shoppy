@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -54,20 +55,25 @@ class Order(models.Model):
     def __str__(self) -> str:
         return f"Order {self.id} {self.email}"
 
-    def get_total_cost(self):
+    @property
+    def total_price(self):
         if self.paid_amount:
             return self.paid_amount
 
         return 0
 
-    # def get_total_cost_before_discount(self):
-    #   return sum(product.get_cost() for product in self.products.all())
+    def get_total_price_before_discount(self):
+        return sum(product.get_cost() for product in self.products.all())
 
-    # def get_discount(self):
-    #   total_cost = self.get_total_cost_before_discount()
-    #   if self.discount:
-    #       return total_cost * (self.discount / Decimal(100))
-    #   return Decimal(0)
+    def get_discount(self):
+        total_price = self.get_total_price_before_discount()
+        if self.discount:
+            return total_price * (self.discount / Decimal(100))
+        return Decimal(0)
+
+    def get_total_cost(self):
+        total_cost = self.get_total_cost_before_discount()
+        return total_cost - self.get_discount()
 
 
 class OrderItem(models.Model):

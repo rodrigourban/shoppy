@@ -84,5 +84,5 @@ class HxMenuCart(TemplateView):
     template_name = "cart/partials/_menu_cart.html"
 
 
-class HxTotalCost(TemplateView):
-    template_name = "cart/partials/_total_cost.html"
+class HxTotalPrice(TemplateView):
+    template_name = "cart/partials/_total_price.html"

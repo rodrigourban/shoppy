@@ -7,7 +7,13 @@ from products.models import Product
 
 
 class Cart(object):
+    """
+    Cart object that handles session usage
+    Also used as a context processor
+    """
+
     def __init__(self, request):
+        # Get cart from session or initialize it
         self.cart_session_id = getattr(
             settings, "CART_SESSION_ID", "test"
         )  # For testing purposes, set default
@@ -34,6 +40,7 @@ class Cart(object):
             yield product
 
     def __len__(self):
+        # Quantity of items in Cart
         return sum(product["quantity"] for product in self.cart.values())
 
     @property
@@ -45,13 +52,15 @@ class Cart(object):
                 pass
         return None
 
-    def get_discount(self):
+    @property
+    def discount(self):
         if self.coupon:
-            return (self.coupon.discount / Decimal(100)) * self.get_total_cost()
+            return (self.coupon.discount / Decimal(100)) * self.total_price
         return Decimal(0)
 
-    def get_total_price_after_discount(self):
-        return self.get_total_cost() - self.get_discount()
+    @property
+    def total_price_after_discount(self):
+        return self.total_price - self.discount
 
     def save(self):
         self.session[self.cart_session_id] = self.cart
@@ -84,7 +93,8 @@ class Cart(object):
         del self.session[self.cart_session_id]
         self.session.modified = True
 
-    def get_total_cost(self):
+    @property
+    def total_price(self):
         for product_id in self.cart.keys():
             self.cart[str(product_id)]["properties"] = Product.objects.get(
                 pk=product_id

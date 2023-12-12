@@ -6,7 +6,7 @@ from .views import (
     CartUpdateView,
     CheckoutView,
     HxMenuCart,
-    HxTotalCost,
+    HxTotalPrice,
     SuccessView,
 )
 
@@ -22,6 +22,6 @@ urlpatterns = [
         name="update",
     ),
     path("hx_menu_cart/", HxMenuCart.as_view(), name="hx_menu_cart"),
-    path("hx_total_cost/", HxTotalCost.as_view(), name="hx_total_cost"),
+    path("hx_total_price/", HxTotalPrice.as_view(), name="hx_total_price"),
     path("success/", SuccessView.as_view(), name="success"),
 ]

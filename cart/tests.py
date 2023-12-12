@@ -83,12 +83,12 @@ class CartTests(TestCase):
         cart.add(self.product2.pk, quantity=3)
         self.assertEqual(len(list(cart)), 2)
 
-    def test_cart_get_total_cost(self):
+    def test_cart_get_total_price(self):
         cart = Cart(self.client)
         cart.add(self.product.pk, quantity=2)
         cart.add(self.product2.pk, quantity=3)
-        _cost = (self.product.price * 2) + (self.product2.price * 3)
-        self.assertEqual(cart.get_total_cost(), _cost)
+        _price = (self.product.price * 2) + (self.product2.price * 3)
+        self.assertEqual(cart.total_price, _price)
 
     def test_cart_get_product(self):
         cart = Cart(self.client)

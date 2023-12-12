@@ -17,14 +17,16 @@
         </div>
         <div class="flex flex-1 items-center justify-end gap-2">
             <div>
-                <label for="Line1Qty" class="sr-only">Quantity</label>
-                <div class="mb-6 flex items-center space-x-4 bg-purple-400">
-                    <a class="p-3 hover:bg-fuchsia-700 hover:cursor-pointer"
+                <label for="Quantity" class="sr-only">Quantity</label>
+                <div class="flex items-center rounded border border-gray-200">
+                    <a class="h-10 w-10 text-center leading-10 text-gray-600 transition hover:opacity-75 cursor-pointer"
                        hx-get="{% url 'cart:update' product.properties.id 'decrement' %}"
                        hx-target="#cart-item-{{ product.properties.id }}"
                        hx-swap="outerHTML">-</a>
-                    <span>{{ product.quantity }}</span>
-                    <a class="p-3 hover:bg-fuchsia-700 hover:cursor-pointer"
+                    <div class="h-5 w-5 border-transparent text-center [-moz-appearance:_textfield] sm:text-sm ">
+                        {{ product.quantity }}
+                    </div>
+                    <a class="h-10 w-10 text-center leading-10 text-gray-600 transition hover:opacity-75 cursor-pointer"
                        hx-get="{% url 'cart:update' product.properties.id 'increment' %}"
                        hx-target="#cart-item-{{ product.properties.id }}"
                        hx-swap="outerHTML">+</a>

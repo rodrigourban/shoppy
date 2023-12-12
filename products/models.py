@@ -126,7 +126,8 @@ class Product(models.Model):
             else:
                 return "https://via.placeholder.com/240x240.jpg"
 
-    def get_rating(self):
+    @property
+    def rating(self):
         reviews_total = 0
         for review in self.reviews.all():
             reviews_total += review.rating

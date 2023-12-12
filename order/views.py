@@ -21,12 +21,12 @@ class OrderCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         cart = Cart(request)
         data = json.loads(request.body)
-        total_cost = 0
+        total_price = 0
 
         items_in_cart = []
         for item in cart:
             product = item["properties"]
-            total_cost += product.price * int(item["quantity"])
+            total_price += product.price * int(item["quantity"])
 
             items_in_cart.append(
                 {
@@ -61,11 +61,15 @@ class OrderCreateView(LoginRequiredMixin, View):
             city=data["city"],
             phone=data["phone"],
             paid=True,
-            paid_amount=total_cost,
+            paid_amount=total_price,
         )
 
+        if cart.coupon:
+            order.coupon = cart.coupon
+            order.discount = cart.coupon.discount
+
         order.payment_intent = payment_intent
-        order.paid_amount = total_cost
+        order.paid_amount = total_price
         order.paid = True
         order.save()
 
