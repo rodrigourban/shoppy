@@ -58,6 +58,5 @@
         </div>
     </section>
     {% include "_statistics.html" %}
-    {% include "_featured.html" %}
-    {% include "_testimonials.html" %}
+    {% include "_featured.html" with featured_products=featured_products %}
 {% endblock content %}

@@ -15,6 +15,7 @@ class CartListView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        print(context)
         context["coupon_apply_form"] = CouponApplyForm()
         return context
 
@@ -32,7 +33,8 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
 class CartAddView(View):
     def get(self, request, product_id):
         cart = Cart(request)
-        cart.add(product_id)
+        quantity = request.GET.get("quantity", "1")
+        cart.add(product_id, quantity=quantity)
 
         return render(request, "cart/partials/_menu_cart.html")
 

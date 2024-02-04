@@ -56,6 +56,7 @@ class Product(models.Model):
     thumbnail = models.ImageField(upload_to="product_images", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    featured = models.BooleanField(default=False)
 
     category = models.ForeignKey(
         Category, related_name="products", on_delete=models.CASCADE

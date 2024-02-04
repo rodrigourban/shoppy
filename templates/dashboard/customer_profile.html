@@ -1,0 +1,24 @@
+{% extends "_base.html" %}
+{% load crispy_forms_tags %}
+{% block title %}
+  Your Profile
+{% endblock title %}
+{% block content %}
+  <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+    <h2 class="mb-12 text-2xl text-center">Hi, {{ user.username }}</h2>
+    <div class="grid grid-cols-3 gap-3">
+      <h2 class="mb-12 text-2xl text-center">Account Profile</h2>
+      <form action="">
+        {% csrf_token %}
+        {{ profile_form|crispy }}
+      </form>
+    </div>
+  </div>
+  <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
+    <h2 class="mb-12 text-2xl text-center">Shipping information</h2>
+    <form action="">
+      {% csrf_token %}
+      {{ shipping_form|crispy }}
+    </form>
+  </div>
+{% endblock content %}

@@ -68,15 +68,17 @@ class Cart(object):
 
     def add(self, product_id, quantity=1, update_quantity=False):
         product_id = str(product_id)
+        product_obj = Product.objects.get(pk=product_id)
 
-        if product_id not in self.cart:
+        if product_id not in self.cart or not update_quantity:
             self.cart[product_id] = {
-                "quantity": quantity,
+                "quantity": int(quantity),
                 "id": product_id,
             }
-
-        if update_quantity:
-            self.cart[product_id]["quantity"] += int(quantity)
+        else:
+            current_quantity = self.cart[product_id]["quantity"]
+            if current_quantity + int(quantity) <= product_obj.stock:
+                self.cart[product_id]["quantity"] += int(quantity)
 
             if self.cart[product_id]["quantity"] == 0:
                 self.remove(product_id)
@@ -95,7 +97,6 @@ class Cart(object):
 
     @property
     def total_price(self):
-        print("hey")
         for product_id in self.cart.keys():
             self.cart[str(product_id)]["properties"] = Product.objects.get(
                 pk=product_id

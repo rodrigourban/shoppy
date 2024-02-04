@@ -8,7 +8,7 @@
             <h2 class="text-xl font-bold text-emerald-600 sm:text-3xl">Fresh!</h2>
             <p class="mt-4 text-sm text-gray-600">Check out our frozen and fresh picks for you!</p>
           </header>
-          <a href="#"
+          <a href="{% url "products:list" %}?featured=1"
              class="mt-8 inline-block rounded border border-gray-900 bg-gray-900 px-12 py-3 text-sm font-medium text-white transition hover:shadow focus:outline-none focus:ring">
             Browse
           </a>
@@ -16,24 +16,19 @@
       </div>
       <div class="lg:col-span-2 lg:py-8">
         <ul class="grid grid-cols-2 gap-4">
-          <li>
-            <a href="#" class="group block">
-              <img src="{% static "images/healthy-salad.jpeg" %}" alt="" class="aspect-square w-full rounded object-cover" />
-              <div class="mt-3">
-                <h3 class="font-medium text-gray-900 group-hover:underline group-hover:underline-offset-4">Healthy Salad Lunch</h3>
-                <p class="mt-1 text-sm text-gray-700">$30</p>
-              </div>
-            </a>
-          </li>
-          <li>
-            <a href="#" class="group block">
-              <img src="{% static "images/overnight-oats.jpeg" %}" alt="" class="aspect-square w-full rounded object-cover" />
-              <div class="mt-3">
-                <h3 class="font-medium text-gray-900 group-hover:underline group-hover:underline-offset-4">Overnight Oats</h3>
-                <p class="mt-1 text-sm text-gray-700">$20</p>
-              </div>
-            </a>
-          </li>
+          {% for product in featured_products %}
+            <li>
+              <a href="{% url "products:detail" product.slug %}" class="group block">
+                <img src="{{ product.get_thumbnail }}"
+                     alt=""
+                     class="aspect-square w-full rounded object-cover" />
+                <div class="mt-3">
+                  <h3 class="font-medium text-gray-900 group-hover:underline group-hover:underline-offset-4">{{ product.name }}</h3>
+                  <p class="mt-1 text-sm text-gray-700">${{ product.price }}</p>
+                </div>
+              </a>
+            </li>
+          {% endfor %}
         </ul>
       </div>
     </div>

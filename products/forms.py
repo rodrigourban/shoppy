@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Product
+from .models import Product, Review
 
 INPUT_CLASSES = "mt-1 w-full rounded-md border-gray-200 shadow-sm sm:text-sm"
 
@@ -43,3 +43,17 @@ class ProductUpdateForm(forms.ModelForm):
 
 class ProductSearchForm(forms.Form):
     query = forms.CharField()
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = (
+            "content",
+            "rating",
+        )
+
+        widgets = {
+            "content": forms.Textarea(attrs={"class": INPUT_CLASSES}),
+            "rating": forms.NumberInput(attrs={"min": 0, "max": 5}),
+        }
