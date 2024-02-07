@@ -1,0 +1,16 @@
+<div class="flex flex-col gap-4 p-4">
+  <!-- Profile and Rating -->
+  <div class="flex justify justify-between">
+    <div class="flex gap-2">
+      <div class="w-7 h-7 text-center rounded-full bg-red-500">J</div>
+      <span>{{ review.created_by.username }}</span>
+    </div>
+    <div class="flex p-1 gap-1 text-orange-300">
+      {% include "products/partials/_star_score.html" with score=review.rating %}
+    </div>
+  </div>
+  <div>{{ review.content }}</div>
+  <div class="flex justify-between">
+    <span>{{ review.created_at|date:"j/n/Y H:i" }}</span>
+  </div>
+</div>

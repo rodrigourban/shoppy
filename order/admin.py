@@ -39,16 +39,21 @@ export_to_csv.short_description = "Export to CSV"
 
 
 def order_detail(obj):
-    url = reverse("order:admin_order_detail", args=[obj.id])
+    url = reverse("orders:admin_order_detail", args=[obj.id])
     return mark_safe(f"<a href='{url}'>View</a>")
 
 
 def order_pdf(obj):
-    url = reverse("order:admin_order_pdf", args=[obj.id])
+    url = reverse("orders:admin_order_pdf", args=[obj.id])
     return mark_safe(f"<a href='{url}'>PDF</a>")
 
 
 order_pdf.short_description = "Invoice"
+
+
+def ship_order(obj):
+    url = reverse("orders:ship_order", args=[obj.id])
+    return mark_safe(f"<a href='{url}'>Ship order</a>")
 
 
 class OrderItemInline(admin.TabularInline):
@@ -68,6 +73,7 @@ class OrderAdmin(admin.ModelAdmin):
         "paid",
         "status",
         "created_at",
+        ship_order,
         order_detail,
         order_pdf,
     ]

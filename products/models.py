@@ -53,7 +53,9 @@ class Product(models.Model):
         null=True,
         default="no_image.png",
     )
-    thumbnail = models.ImageField(upload_to="product_images", blank=True, null=True)
+    thumbnail = models.ImageField(
+        upload_to="product_images", blank=True, null=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     featured = models.BooleanField(default=False)
@@ -137,6 +139,17 @@ class Product(models.Model):
             return reviews_total / self.reviews.count()
 
         return reviews_total
+
+
+class CanReview(models.Model):
+    product = models.ForeignKey(
+        Product, related_name="can_review_users", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        get_user_model(),
+        related_name="can_review_users",
+        on_delete=models.CASCADE,
+    )
 
 
 class Review(models.Model):

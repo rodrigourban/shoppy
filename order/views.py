@@ -7,7 +7,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.views import View
 
@@ -126,3 +126,11 @@ def admin_order_pdf(request, order_id):
     )
 
     return response
+
+
+@staff_member_required
+def admin_order_ship(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order.status = "SHIPPED"
+    order.save(update_fields=["status"])
+    return redirect("admin:order_order_changelist")

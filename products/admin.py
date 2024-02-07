@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Category, Favorite, Product, Review
+from .models import Category, Favorite, Product, Review, CanReview
 
 
 class ReviewInline(admin.StackedInline):
@@ -35,3 +35,8 @@ class ProductAdmin(admin.ModelAdmin):
     prepopulated_fields = {"slug": ("name",)}
 
     inlines = [ReviewInline, FavoriteInline]
+
+
+@admin.register(CanReview)
+class CanReviewCategoryAdmin(admin.ModelAdmin):
+    list_display = ["product", "user"]

@@ -38,7 +38,7 @@
                 {% if products %}
                     {% for product in products %}
                         <li>
-                            <a href="{% url "products:detail" product.pk %}"
+                            <a href="{% url "products:detail" product.slug %}"
                                class="block overflow-hidden group">
                                 <img src="{{ product.get_thumbnail }}"
                                      alt="{{ product.name }}"

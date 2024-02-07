@@ -1,20 +1,40 @@
+from typing import Any
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+)
 from django.contrib.postgres.search import TrigramSimilarity
-from django.db.models import Q, Sum
+from django.db.models import Q
+from django.db.models.query import QuerySet
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from stripe import Review
 
-from .forms import ProductCreateForm, ProductUpdateForm
-from .models import Category, Favorite, Product, Review
+from .utils import CacheMixin
+
+from .forms import ProductCreateForm, ProductUpdateForm, ReviewForm
+from .models import Category, Favorite, Product
 
 
-class ProductsListView(ListView):
+class FeaturedProductsListView(ListView):
+    models = Product
+    context_object_name = "featured_products"
+    template_name = "products/list.html"
+
+    def get_queryset(self) -> QuerySet[Any]:
+        qs = Product.available.filter(featured=True)
+        return qs
+
+
+class ProductsListView(CacheMixin, ListView):
     model = Product
     context_object_name = "product_list"
     template_name = "products/list.html"
+    cache_timeout = 30
     paginate_by = 15
 
     def get_queryset(self):
@@ -26,6 +46,7 @@ class ProductsListView(ListView):
         price_from = self.request.GET.get("price_from", 1)
         price_to = self.request.GET.get("price_to", 10000)
         order_by = self.request.GET.get("order_by", None)
+        featured = self.request.GET.get("featured", None)
 
         filters["price__gte"] = price_from
         filters["price__lte"] = price_to
@@ -37,6 +58,9 @@ class ProductsListView(ListView):
 
         if order_by:
             _qs = _qs.order_by(order_by)
+
+        if featured:
+            _qs = _qs.filter(featured=True)
 
         return _qs
 
@@ -70,7 +94,9 @@ class ProductsSearchView(ListView):
             q_chain &= Q(category=int(category))
 
         if query:
-            q_chain &= Q(Q(name_similarity__gt=0.1) | Q(description_similarity__gt=0.1))
+            q_chain &= Q(
+                Q(name_similarity__gt=0.1) | Q(description_similarity__gt=0.1)
+            )
             _qs = Product.availables.annotate(
                 name_similarity=TrigramSimilarity("name", query),
                 description_similarity=TrigramSimilarity("description", query),
@@ -100,18 +126,37 @@ class ProductsDetailView(DetailView):
             category=context["product"].category
         ).exclude(pk=context["product"].pk)[0:3]
         context["related_products"] = related_products
-        context["score"] = Review.objects.filter(
-            product=context["product"].pk
-        ).aggregate(Sum("rating"))
+
+        reviews = context["product"].reviews.all().order_by("-created_at")[:5]
+        review_count = 1 if len(reviews) == 0 else len(reviews)
+        score = sum((review.rating for review in reviews)) / review_count
+
+        context["reviews"] = reviews
+        context["score"] = score
+
         if self.request.user.is_authenticated:
             context["favorited"] = Favorite.objects.filter(
                 product=context["product"], created_by=self.request.user
             ).exists()
 
+        context["stocks"] = [n for n in range(1, context["product"].stock + 1)]
+
+        # check if user can review
+        can_review = (
+            context["product"]
+            .can_review_users.filter(user__id=self.request.user.id)
+            .exists()
+        )
+
+        if can_review:
+            context["review_form"] = ReviewForm()
+
         return context
 
 
-class ProductsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+class ProductsCreateView(
+    LoginRequiredMixin, PermissionRequiredMixin, CreateView
+):
     model = Product
     template_name = "products/create.html"
     form_class = ProductCreateForm
@@ -125,7 +170,9 @@ class ProductsCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView
         return super().form_valid(form)
 
 
-class ProductUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class ProductUpdateView(
+    LoginRequiredMixin, PermissionRequiredMixin, UpdateView
+):
     model = Product
     template_name = "products/update.html"
     form_class = ProductUpdateForm
@@ -154,11 +201,15 @@ class FavoriteListView(LoginRequiredMixin, ListView):
 def toggle_favorite(request, pk):
     product = get_object_or_404(Product, id=pk)
     try:
-        favorite = Favorite.objects.get(product=product, created_by=request.user)
+        favorite = Favorite.objects.get(
+            product=product, created_by=request.user
+        )
         favorite.delete()
         favorite = False
     except Favorite.DoesNotExist:
-        favorite = Favorite.objects.create(product=product, created_by=request.user)
+        favorite = Favorite.objects.create(
+            product=product, created_by=request.user
+        )
         favorite = True
 
     return HttpResponse(
@@ -191,3 +242,27 @@ def toggle_favorite(request, pk):
         <div>
     """
     )
+
+
+class CreateReviewView(LoginRequiredMixin, CreateView):
+    model = Review
+    form_class = ReviewForm
+    # permission_required = "review:add_review"
+
+    def get_success_url(self) -> str:
+        return reverse(
+            "products:detail", kwargs={"slug": self.object.product.slug}
+        )
+
+    def form_valid(self, form):
+        product = Product.objects.get(slug=self.request.POST.get("product"))
+        self.object = form.save(commit=False)
+        self.object.product = product
+        self.object.created_by = self.request.user
+        self.object.save()
+
+        messages.add_message(
+            self.request, messages.SUCCESS, "Your review has been added!"
+        )
+
+        return super().form_valid(form)
