@@ -56,6 +56,16 @@ def ship_order(obj):
     return mark_safe(f"<a href='{url}'>Ship order</a>")
 
 
+def cancel_order(obj):
+    url = reverse("orders:cancel_order", args=[obj.id])
+    return mark_safe(f"<a href='{url}'>Cancel order</a>")
+
+
+def complete_order(obj):
+    url = reverse("orders:complete_order", args=[obj.id])
+    return mark_safe(f"<a href='{url}'>Complete order</a>")
+
+
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     raw_id_fields = ["product"]
@@ -74,6 +84,8 @@ class OrderAdmin(admin.ModelAdmin):
         "status",
         "created_at",
         ship_order,
+        cancel_order,
+        complete_order,
         order_detail,
         order_pdf,
     ]

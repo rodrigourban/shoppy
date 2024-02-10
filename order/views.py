@@ -1,6 +1,5 @@
 import json
 
-import stripe
 import weasyprint
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
@@ -14,13 +13,16 @@ from django.views import View
 from cart.cart import Cart
 from celery import shared_task
 
+from payment.services import StripePayment
+from accounts.models import ShippingInfo
+
 from .models import Order, OrderItem
 
 
 class OrderCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         cart = Cart(request)
-        data = json.loads(request.body)
+        shipping_info = json.loads(request.body)
         total_price = 0
 
         items_in_cart = []
@@ -42,25 +44,28 @@ class OrderCreateView(LoginRequiredMixin, View):
             )
 
         # create a service for this to handle multiple payment methods
-        stripe.api_key = settings.STRIPE_SECRET_KEY
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=items_in_cart,
-            mode="payment",
-            success_url="http://localhost:8000/cart/success/",
-            cancel_url="http://localhost:8000/cart/",
-        )
+        session = StripePayment.create_session(items_in_cart)
         payment_intent = session.payment_intent
+
+        if "id" in shipping_info.keys():
+            shipping_obj = ShippingInfo.objects.get(id=shipping_info["id"])
+            shipping_info["first_name"] = shipping_obj.first_name
+            shipping_info["last_name"] = shipping_obj.last_name
+            shipping_info["address"] = shipping_obj.address
+            shipping_info["city"] = shipping_obj.city
+            shipping_info["zipcode"] = shipping_obj.zipcode
+            shipping_info["phone"] = shipping_obj.phone
+            shipping_info["email"] = shipping_obj.email
 
         order = Order.objects.create(
             user=request.user,
-            first_name=data["first_name"],
-            last_name=data["last_name"],
-            email=data["email"],
-            address=data["address"],
-            zipcode=data["zipcode"],
-            city=data["city"],
-            phone=data["phone"],
+            first_name=shipping_info["first_name"],
+            last_name=shipping_info["last_name"],
+            email=shipping_info["email"],
+            address=shipping_info["address"],
+            zipcode=shipping_info["zipcode"],
+            city=shipping_info["city"],
+            phone=shipping_info["phone"],
             paid=True,
             paid_amount=total_price,
         )
@@ -78,7 +83,17 @@ class OrderCreateView(LoginRequiredMixin, View):
             product = item["properties"]
             quantity = int(item["quantity"])
             price = product.price * quantity
-
+            # reduce stock
+            new_quantity = product.stock - quantity
+            if new_quantity > 0:
+                product.stock = new_quantity
+                product.save()
+            else:
+                product.stock = 0
+                product.available = False
+                product.save()
+                # [OUT OF MVP SCOPE] send an email to admins letting them know
+                # this item is out of stock
             item = OrderItem.objects.create(
                 order=order, product=product, price=price, quantity=quantity
             )
@@ -128,9 +143,44 @@ def admin_order_pdf(request, order_id):
     return response
 
 
+"""
+    Right now all order status changing look the same,
+    and we could be tempted to generate a general method
+    but in the future each action is going to do different
+    things, so it's better to have them as different
+    functions.
+"""
+
+
 @staff_member_required
 def admin_order_ship(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    order.status = "SHIPPED"
+    order.status = "shipped"
+    order.save(update_fields=["status"])
+    return redirect("admin:order_order_changelist")
+
+
+@staff_member_required
+def admin_order_cancel(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+
+    # return product stock
+    for item in order.order_items.all():
+        item.product.stock += item.quantity
+        if not item.product.available:
+            item.product.available = True
+        item.product.save()
+
+    # [OUT OF SCOPE OF MVP] return money to customer
+
+    order.status = "cancelled"
+    order.save(update_fields=["status"])
+    return redirect("admin:order_order_changelist")
+
+
+@staff_member_required
+def admin_order_completed(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    order.status = "completed"
     order.save(update_fields=["status"])
     return redirect("admin:order_order_changelist")

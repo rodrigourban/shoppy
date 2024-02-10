@@ -1,31 +1,31 @@
 {% extends "_base.html" %}
 {% block title %}
-  Orders
+  Order Detail
 {% endblock title %}
 {% block content %}
   <header class="bg-gray-50">
     <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div class="sm:flex sm:items-center sm:justify-between">
         <div class="text-center sm:text-left">
-          <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Your orders!</h1>
+          <h1 class="text-2xl font-bold text-gray-900 sm:text-3xl">Order number {{ order.pk }}</h1>
+          <h2>Status: {{ order.status }}</h2>
         </div>
       </div>
     </div>
   </header>
   <div class="mx-auto max-w-screen-xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
     <ul role="list" class="divide-y divide-gray-100">
-      {% for order in order_list %}
+      {% for item in order_items %}
         <a href="{% url "dashboard:customer_order_detail" order.pk %}">
           <li class="flex justify-between gap-x-6 py-5">
             <div class="flex min-w-0 gap-x-4">
               <div class="min-w-0 flex-auto pl-2">
-                <p class="text-sm font-semibold leading-6 text-gray-900">Order: {{ order.pk }}</p>
-                <p class="mt-1 truncate text-xs leading-5 text-gray-500">created on: {{ order.created_at }}</p>
+                <p class="text-sm font-semibold leading-6 text-gray-900">{{ item.product.name }}</p>
               </div>
             </div>
             <div class="shrink-0 sm:flex sm:flex-col sm:items-end">
-              <p class="mt-1 text-xs leading-5 text-gray-500 border-solid border-2 rounded p-1">Status: {{ order.status }}</p>
-              <p class="mt-1 text-xs leading-5 text-gray-500 border-solid border-2 rounded p-1">Price: ${{ order.paid_amount }}</p>
+              <p class="mt-1 text-xs leading-5 text-gray-500 border-solid border-2 rounded p-1">Quantity: {{ item.quantity }}</p>
+              <p class="mt-1 text-xs leading-5 text-gray-500 border-solid border-2 rounded p-1">Price: ${{ item.price }}</p>
             </div>
           </li>
         </a>

@@ -1,0 +1,5 @@
+<li class="flex flex-col gap-4 p-4">
+  <div>Delivery address: {{ shipping.address }}, {{ shipping.city }} ({{ shipping.zipcode }})</div>
+  <div>Contact Phone: {{ shipping.phone }}</div>
+  <a hx-delete="{% url "dashboard:delete_shipping" shipping.pk %}">Delete</a>
+</li>

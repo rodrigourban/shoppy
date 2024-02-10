@@ -1,13 +1,7 @@
-from decimal import Decimal
-
-import stripe
-from django.conf import settings
 from django.shortcuts import get_object_or_404, redirect, render, reverse
 
 from order.models import Order
-
-stripe.api_key = settings.STRIPE_PUBLISHABLE_KEY
-stripe.api_version = settings.STRIPE_API_VERSION
+from .services import StripePayment
 
 
 def payment_process(request):
@@ -18,27 +12,7 @@ def payment_process(request):
         success_url = request.build_absolute_url(reverse("payment:completed"))
         cancel_url = request.build_absolute_url(reverse("payment:cancelled"))
 
-        session_data = {
-            "mode": "payment",
-            "client_referece_id": order.id,
-            "success_url": success_url,
-            "cancel_url": cancel_url,
-            "line_items": [],
-        }
-
-        for order_item in order.items.all():
-            session_data["line_items"].append(
-                {
-                    "price_data": {
-                        "unit_amount": int(order_item.price * Decimal("100")),
-                        "currency": "usd",
-                        "product_data": {"name": order_item.product.name},
-                    },
-                    "quantity": order_item.quantity,
-                }
-            )
-
-        session = stripe.checkout.Session.create(**session_data)
+        session = StripePayment(order, success_url, cancel_url)
 
         return redirect(session.url, code=303)
 

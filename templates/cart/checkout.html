@@ -8,6 +8,29 @@
     <div class="w-full pr-6">
       <div class="mb-6 p-6 bg-gray-100">
         <h2 class="uppercase mb-5 text-lg">Shipping Information</h2>
+        <fieldset>
+          <legend class="sr-only">Checkboxes</legend>
+          <div class="space-y-2">
+            {% for shipping in shipping_list %}
+              <label for="{{ shipping.pk }}"
+                     class="flex cursor-pointer items-start gap-4 rounded-lg border border-gray-200 p-4 transition hover:bg-gray-50 has-[:checked]:bg-blue-50">
+                <div class="flex items-center">
+                  &#8203;
+                  <input type="radio"
+                         class="size-4 rounded border-gray-300"
+                         name="shipping_option"
+                         value="{{ shipping.pk }}"
+                         onclick="selectShipping({{ shipping.pk }})" />
+                </div>
+                <div>
+                  <strong class="font-medium text-gray-900">Shipping: {{ shipping.address }}</strong>
+                  <p class="mt-1 text-pretty text-sm text-gray-700">City: {{ shipping.city }} Zip code: {{ shipping.zipcode }}.</p>
+                  <p class="mt-1 text-pretty text-sm text-gray-700">Phone: {{ shipping.phone }}</p>
+                </div>
+              </label>
+            {% endfor %}
+          </div>
+        </fieldset>
         <div class="mb-6 p-6 bg-gray-100" id="errors"></div>
         <div class="flex space-x-6">
           <div class="w-1/2 mb-4">
@@ -114,6 +137,12 @@
   <script type="application/javascript" src="https://js.stripe.com/v3/"></script>
   <script>
   const errorsElement = document.querySelector('#errors');
+  let selectedShipping = -1;
+
+  const selectShipping = (shipping_id) => {
+    selectedShipping = shipping_id;
+  }
+
   const validateForm = (data) => {
     let errors = [];
 
@@ -156,17 +185,23 @@
 
   const buy = (event) => {
     event.preventDefault();
+    let errors = [];
+    let data = {};
 
-    let data = {
-      'first_name': document.querySelector('input[name=first_name]').value,
-      'last_name': document.querySelector('input[name=last_name]').value,
-      'email': document.querySelector('input[name=email]').value,
-      'phone': document.querySelector('input[name=phone]').value,
-      'address': document.querySelector('input[name=address]').value,
-      'zipcode': document.querySelector('input[name=zipcode]').value,
-      'city': document.querySelector('input[name=city]').value
+    if (selectedShipping !== -1) {
+      data = {'id': selectedShipping};
+    } else {
+      data = {
+        'first_name': document.querySelector('input[name=first_name]').value,
+        'last_name': document.querySelector('input[name=last_name]').value,
+        'email': document.querySelector('input[name=email]').value,
+        'phone': document.querySelector('input[name=phone]').value,
+        'address': document.querySelector('input[name=address]').value,
+        'zipcode': document.querySelector('input[name=zipcode]').value,
+        'city': document.querySelector('input[name=city]').value
+      }
+      errors = validateForm(data);
     }
-    const errors = validateForm(data);
 
     if (errors.length) {
       //show error message
