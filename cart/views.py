@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 
 from coupons.forms import CouponApplyForm
 from products.models import Product
+from accounts.models import ShippingInfo
 
 from .cart import Cart
 
@@ -26,6 +27,9 @@ class CheckoutView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         pub_key = settings.STRIPE_PUBLISHABLE_KEY
         context["pub_key"] = pub_key
+        context["shipping_list"] = ShippingInfo.objects.filter(
+            user=self.request.user.pk
+        )
         return context
 
 

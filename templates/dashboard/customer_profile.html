@@ -6,13 +6,13 @@
 {% block content %}
   <div class="mt-6 px-6 py-12 bg-gray-100 rounded-xl">
     <h2 class="mb-12 text-2xl text-center">Shipping information</h2>
-    <ul id="shipping_list" hx-trigger="load, taskListChanged">
-      {% for shipping in shipping_info_list %}
-        {% include "dashboard/partials/_shipping_info.html" with shipping=shipping %}
-      {% endfor %}
+    <ul id="shipping_list"
+        hx-trigger="load, task-list-changed from:body"
+        hx-get="{% url "dashboard:get_create_shipping_info" %}">
     </ul>
-    <button hx-get="{% url "dashboard:shipping_form" %}"
-            hx-target="#shipping_forms">Add new shipping</button>
-    <div id="shipping_forms"></div>
+    <button class="my-4 w-full rounded-lg bg-teal-600 px-5 py-3 text-sm font-medium text-white"
+            hx-get="{% url "dashboard:add_shipping_form" %}"
+            hx-target="#shipping_form">Add new shipping</button>
+    <div id="shipping_form"></div>
   </div>
 {% endblock content %}
